@@ -2,8 +2,11 @@ name: ContentPilot — Daily Pipeline
 
 on:
   schedule:
-    - cron: '0 2 * * 1-5'  # 6am Dubai time, Mon-Fri
+    - cron: '0 2 * * 1-5'
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   generate-scripts:
@@ -13,6 +16,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -42,17 +47,11 @@ jobs:
             python agent2_voice.py
           fi
 
-      # Agent 3 (Video) runs separately — needs more resources
-      # Uncomment below once script+voice pipeline is stable
-      # - name: Run Agent 3 — Video
-      #   run: python agent3_video.py
-
-      - name: Commit results
+      - name: Save results
         run: |
           git config --global user.name "ContentPilot Bot"
-          git config --global user.email "bot@contentpilot"
+          git config --global user.email "bot@contentpilot.local"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
           git add -A
-          git diff --staged --quiet || git commit -m "🤖 Daily run — $(date '+%Y-%m-%d')"
-          git push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          git diff --staged --quiet || git commit -m "🤖 Daily run — $(date '+%Y-%m-%d %H:%M')"
+          git push origin main
