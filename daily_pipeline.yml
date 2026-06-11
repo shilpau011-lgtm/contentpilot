@@ -1,89 +1,65 @@
-name: ContentPilot — Daily Script Generator
+name: ContentPilot — Daily Pipeline
 
 on:
   schedule:
-    # Runs every day at 6:00 AM Dubai time (UTC+4 = 2:00 AM UTC)
-    - cron: '0 2 * * 1-5'   # Monday to Friday only
-
-  # Allow manual trigger from GitHub UI
-  workflow_dispatch:
+    - cron: '0 2 * * 1-5'  # 6am Dubai time, Mon-Fri
+  workflow_dispatch:        # Manual trigger button
 
 jobs:
   generate-scripts:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.11
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: |
-          pip install requests
+        run: pip install requests
 
-      - name: Run Agent 1 — The Writer
+      - name: Run Agent 1 — Writer
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          python agents/agent1_writer.py
+          # Works whether file is in root or agents/ folder
+          if [ -f "agents/agent1_writer.py" ]; then
+            python agents/agent1_writer.py
+          else
+            python agent1_writer.py
+          fi
 
-      - name: Commit generated scripts to repo
-        run: |
-          git config --global user.name "ContentPilot Bot"
-          git config --global user.email "bot@contentpilot.local"
-          git add output/ config/queue.json
-          git diff --staged --quiet || git commit -m "🤖 Daily scripts — $(date '+%Y-%m-%d')"
-          git push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Summary
-        run: |
-          echo "✅ Scripts generated for all 4 channels"
-          echo "📬 Open your dashboard to review and approve"
-
-  # Separate job: runs voice + video after you approve in dashboard
-  process-approved:
-    runs-on: ubuntu-latest
-    needs: generate-scripts
-    if: always()
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Install video dependencies
-        run: |
-          sudo apt-get install -y ffmpeg
-          pip install moviepy pillow requests --break-system-packages -q
-
-      - name: Run Agent 2 — The Voice (ElevenLabs / Rudra)
+      - name: Run Agent 2 — Voice
         env:
           ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
         run: |
-          python agents/agent2_voice.py
+          if [ -f "agents/agent2_voice.py" ]; then
+            python agents/agent2_voice.py
+          else
+            python agent2_voice.py
+          fi
 
-      - name: Run Agent 3 — The Video Maker
+      - name: Run Agent 3 — Video
         env:
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
         run: |
-          python agents/agent3_video.py
+          sudo apt-get install -y ffmpeg -q
+          pip install moviepy pillow requests -q
+          if [ -f "agents/agent3_video.py" ]; then
+            python agents/agent3_video.py
+          else
+            python agent3_video.py
+          fi
 
-      - name: Commit rendered videos
+      - name: Commit results
         run: |
           git config --global user.name "ContentPilot Bot"
-          git config --global user.email "bot@contentpilot.local"
-          git add output/ config/queue.json
-          git diff --staged --quiet || git commit -m "🎬 Videos rendered — $(date '+%Y-%m-%d')"
+          git config --global user.email "bot@contentpilot"
+          git add -A
+          git diff --staged --quiet || git commit -m "🤖 Daily run — $(date '+%Y-%m-%d')"
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
