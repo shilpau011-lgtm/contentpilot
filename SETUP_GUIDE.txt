@@ -1,0 +1,177 @@
+# ContentPilot — Setup Guide
+# Your 4-Channel AI Video Studio
+# Zero cost after setup (except $5/month ElevenLabs if you prefer it)
+
+==========================================================
+  WHAT YOU HAVE AFTER SETUP
+==========================================================
+
+4 YouTube channels running automatically:
+  🧠 Dark Psychology
+  🌌 Space & Universe
+  📜 Dark History
+  🕵️ True Crime
+
+Each generates 5 videos/week = 20 videos/week total
+Your only job: review & approve from your phone
+
+==========================================================
+  STEP 1 — GET YOUR FREE API KEY
+==========================================================
+
+1. Go to console.anthropic.com
+2. Sign up / log in
+3. Click "API Keys" → Create new key
+4. Copy the key (starts with sk-ant-api03-)
+5. You get free credits to start — enough for weeks of testing
+
+==========================================================
+  STEP 2 — GITHUB SETUP (your free cloud server)
+==========================================================
+
+1. Go to github.com → Create free account
+2. Click "New Repository"
+3. Name it: contentpilot
+4. Set to PRIVATE (important — keeps your content secret)
+5. Upload all files from this folder to the repo
+
+To add your API key securely:
+1. In your repo → Settings → Secrets and variables → Actions
+2. Click "New repository secret"
+3. Name: ANTHROPIC_API_KEY
+4. Value: your key from Step 1
+5. Save
+
+For Pexels (free stock footage):
+1. Go to pexels.com/api → Create free account
+2. Copy your API key
+3. Add to GitHub secrets as: PEXELS_API_KEY
+
+==========================================================
+  STEP 3 — OPEN YOUR DASHBOARD
+==========================================================
+
+Option A — Open locally:
+1. Open dashboard/index.html in your browser
+2. Enter your Anthropic API key when prompted
+3. Click "Generate Today's Scripts"
+
+Option B — Host on Netlify (free, access from phone):
+1. Go to netlify.com → Sign up free
+2. Drag the "dashboard" folder to Netlify Drop
+3. Get a URL like: https://contentpilot-xyz.netlify.app
+4. Open on your phone anytime
+
+==========================================================
+  STEP 4 — ADD YOUR BOYFRIEND'S VOICE
+==========================================================
+
+When ready:
+1. Find a quiet room — no background noise
+2. Record 60 seconds of him reading naturally
+   (use iPhone Voice Memos or any recorder)
+3. Export as: voice_reference.wav
+4. Upload to the config/ folder in your GitHub repo
+5. Agent 2 will automatically clone it next run
+
+Recording script suggestion (read naturally, conversationally):
+---
+"Welcome. Today we're going to explore something most people 
+never stop to think about. The patterns that shape our decisions, 
+our relationships, and our understanding of the world around us.
+What you're about to discover may change the way you see 
+everything. Let's begin. Some of the most fascinating discoveries 
+in science started with a simple question. Why do people behave 
+the way they do? The answer, it turns out, is far more complex
+and far more interesting than anyone expected."
+---
+
+==========================================================
+  STEP 5 — YOUR DAILY ROUTINE
+==========================================================
+
+Every weekday morning:
+1. GitHub Actions runs automatically at 6am Dubai time
+2. Agent 1 writes 4 scripts (one per channel)
+3. You get content in your dashboard
+
+Your job (5-10 mins):
+1. Open dashboard on your phone
+2. Read each script
+3. Tap APPROVE ✅ or REJECT ❌
+4. Done — everything else is automatic
+
+After approval:
+→ Agent 2 generates the voice narration
+→ Agent 3 assembles the video
+→ Video scheduled to post at optimal time
+→ You can check the schedule anytime
+
+==========================================================
+  COST SUMMARY
+==========================================================
+
+  GitHub Actions (cloud runner)    FREE ✅
+  Pexels API (stock footage)       FREE ✅
+  Pixabay (background music)       FREE ✅
+  MoviePy/Python (video assembly)  FREE ✅
+  Chatterbox TTS (voice cloning)   FREE ✅
+  Anthropic API (script writing)   ~$3-5/month for 20 scripts
+  YouTube (hosting + monetization) FREE ✅
+  Netlify (dashboard hosting)      FREE ✅
+
+  TOTAL:  ~$3-5/month
+  (Once monetized, this pays back within the first 1,000 views)
+
+==========================================================
+  YOUTUBE MONETIZATION CHECKLIST
+==========================================================
+
+To qualify for YouTube Partner Program (ads):
+  ☐ 1,000 subscribers
+  ☐ 4,000 watch hours in past 12 months
+  ☐ No community guideline strikes
+  ☐ Linked AdSense account
+
+Realistic timeline with 5 videos/week:
+  Month 1-2:  Building library, learning algorithm
+  Month 3-4:  First 100-500 subscribers per channel
+  Month 5-6:  Approaching monetization threshold
+  Month 6+:   Ad revenue begins, scales with views
+
+==========================================================
+  FILE STRUCTURE
+==========================================================
+
+contentpilot/
+├── agents/
+│   ├── agent1_writer.py      ← generates scripts
+│   ├── agent2_voice.py       ← creates narration
+│   ├── agent3_video.py       ← assembles video
+│   └── agent4_publisher.py   ← handles scheduling
+├── dashboard/
+│   └── index.html            ← YOUR review app
+├── config/
+│   ├── channels.json         ← channel settings
+│   ├── queue.json            ← auto-generated
+│   └── voice_reference.wav   ← ADD THIS (boyfriend's voice)
+├── output/
+│   ├── dark_psychology/
+│   ├── space_universe/
+│   ├── dark_history/
+│   └── true_crime/
+└── .github/
+    └── workflows/
+        └── daily_pipeline.yml ← cloud automation
+
+==========================================================
+  NEED HELP?
+==========================================================
+
+Come back to Claude and say:
+"ContentPilot — [your question]"
+
+For example:
+- "ContentPilot — how do I add my voice recording?"
+- "ContentPilot — the video assembly isn't working"
+- "ContentPilot — how do I connect YouTube API?"

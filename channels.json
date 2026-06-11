@@ -1,0 +1,84 @@
+{
+  "channels": [
+    {
+      "id": "dark_psychology",
+      "name": "Dark Psychology",
+      "emoji": "🧠",
+      "color": "#7c6aff",
+      "description": "Human behavior, manipulation tactics, cognitive biases — all fact-based",
+      "topics": [
+        "manipulation tactics people use without realizing",
+        "cognitive biases that control your decisions",
+        "dark personality traits explained by psychology",
+        "why people stay in toxic relationships science",
+        "psychological experiments that revealed disturbing truths",
+        "body language secrets psychologists know",
+        "how propaganda works on the human brain",
+        "the psychology behind cult indoctrination"
+      ],
+      "avoid": ["target real people", "specific companies", "medical advice"],
+      "post_days": ["Monday","Tuesday","Wednesday","Thursday","Friday"],
+      "post_time": "19:00"
+    },
+    {
+      "id": "space_universe",
+      "name": "Space & Universe",
+      "emoji": "🌌",
+      "color": "#00c6ff",
+      "description": "Cosmic mysteries, NASA discoveries, mind-bending space facts",
+      "topics": [
+        "what exists beyond the observable universe",
+        "black holes NASA cannot explain",
+        "planets more terrifying than science fiction",
+        "the Fermi paradox and where aliens might be",
+        "what happens inside a black hole scientifically",
+        "mysterious signals from deep space explained",
+        "the multiverse theory evidence",
+        "most extreme objects in the known universe"
+      ],
+      "avoid": ["conspiracy theories", "pseudoscience", "unverified claims"],
+      "post_days": ["Monday","Tuesday","Wednesday","Thursday","Friday"],
+      "post_time": "20:00"
+    },
+    {
+      "id": "dark_history",
+      "name": "Dark History",
+      "emoji": "📜",
+      "color": "#c8a96e",
+      "description": "Forgotten, suppressed and disturbing chapters of real history",
+      "topics": [
+        "the experiment governments want forgotten",
+        "historical atrocities that never made the history books",
+        "secret societies that shaped world history",
+        "how ancient civilizations really collapsed",
+        "the most brutal punishments in medieval history",
+        "historical figures who were erased from records",
+        "wars that started from ridiculous reasons",
+        "the dark truth behind famous historical events"
+      ],
+      "avoid": ["glorifying violence", "targeting ethnic groups", "modern politics"],
+      "post_days": ["Monday","Tuesday","Wednesday","Thursday","Friday"],
+      "post_time": "19:00"
+    },
+    {
+      "id": "true_crime",
+      "name": "True Crime",
+      "emoji": "🕵️",
+      "color": "#ff5e5e",
+      "description": "Real cold cases, unsolved mysteries, criminal psychology",
+      "topics": [
+        "cold cases that were solved decades later",
+        "the psychology of serial killers explained",
+        "unsolved disappearances that baffled investigators",
+        "forensic breakthroughs that cracked impossible cases",
+        "cases where the wrong person was convicted",
+        "heists so perfect police still don't know how",
+        "the most baffling unsolved mysteries in history",
+        "criminal masterminds and how they were caught"
+      ],
+      "avoid": ["ongoing cases", "living victims without consent", "graphic violence"],
+      "post_days": ["Monday","Tuesday","Wednesday","Thursday","Friday"],
+      "post_time": "20:00"
+    }
+  ]
+}
