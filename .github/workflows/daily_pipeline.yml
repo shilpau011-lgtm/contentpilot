@@ -1,0 +1,65 @@
+name: ContentPilot — Daily Pipeline
+
+on:
+  schedule:
+    - cron: '0 2 * * 1-5'  # 6am Dubai time, Mon-Fri
+  workflow_dispatch:        # Manual trigger button
+
+jobs:
+  generate-scripts:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run Agent 1 — Writer
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          # Works whether file is in root or agents/ folder
+          if [ -f "agents/agent1_writer.py" ]; then
+            python agents/agent1_writer.py
+          else
+            python agent1_writer.py
+          fi
+
+      - name: Run Agent 2 — Voice
+        env:
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+        run: |
+          if [ -f "agents/agent2_voice.py" ]; then
+            python agents/agent2_voice.py
+          else
+            python agent2_voice.py
+          fi
+
+      - name: Run Agent 3 — Video
+        env:
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+        run: |
+          sudo apt-get install -y ffmpeg -q
+          pip install moviepy pillow requests -q
+          if [ -f "agents/agent3_video.py" ]; then
+            python agents/agent3_video.py
+          else
+            python agent3_video.py
+          fi
+
+      - name: Commit results
+        run: |
+          git config --global user.name "ContentPilot Bot"
+          git config --global user.email "bot@contentpilot"
+          git add -A
+          git diff --staged --quiet || git commit -m "🤖 Daily run — $(date '+%Y-%m-%d')"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
