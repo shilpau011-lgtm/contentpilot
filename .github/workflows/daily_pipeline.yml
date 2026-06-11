@@ -3,11 +3,12 @@ name: ContentPilot — Daily Pipeline
 on:
   schedule:
     - cron: '0 2 * * 1-5'  # 6am Dubai time, Mon-Fri
-  workflow_dispatch:        # Manual trigger button
+  workflow_dispatch:
 
 jobs:
   generate-scripts:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout
@@ -25,7 +26,6 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          # Works whether file is in root or agents/ folder
           if [ -f "agents/agent1_writer.py" ]; then
             python agents/agent1_writer.py
           else
@@ -42,17 +42,10 @@ jobs:
             python agent2_voice.py
           fi
 
-      - name: Run Agent 3 — Video
-        env:
-          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
-        run: |
-          sudo apt-get install -y ffmpeg -q
-          pip install moviepy pillow requests -q
-          if [ -f "agents/agent3_video.py" ]; then
-            python agents/agent3_video.py
-          else
-            python agent3_video.py
-          fi
+      # Agent 3 (Video) runs separately — needs more resources
+      # Uncomment below once script+voice pipeline is stable
+      # - name: Run Agent 3 — Video
+      #   run: python agent3_video.py
 
       - name: Commit results
         run: |
