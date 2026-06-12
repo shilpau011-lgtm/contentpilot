@@ -1012,6 +1012,11 @@ html, body {
 // ── STATE ──────────────────────────────────────────────────────────────────
 let queue = JSON.parse(localStorage.getItem('cp_queue') || '[]');
 let settings = JSON.parse(localStorage.getItem('cp_settings') || '{}');
+// Keys pre-loaded
+settings.anthropicKey = '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';
+settings.elevenKey = 'sk_ca8480a4b093fcf60df5d0ae64e5d3dbfad638a64231a1b9';
+settings.voiceId = 'rkrNegGbFkudOQijQRs0';
+settings.skipSetup = true;
 let currentFilter = 'all';
 
 const CHANNELS = {
