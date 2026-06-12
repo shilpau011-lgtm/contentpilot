@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ContentPilot</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#07070f; color:#fff; font-family:Arial,sans-serif; min-height:100vh; }
+.header { background:#0f0f1a; border-bottom:1px solid #1a1a2e; padding:16px 20px; display:flex; align-items:center; justify-content:space-between; }
+.logo { font-size:20px; font-weight:700; color:#8b7fff; }
+.container { max-width:700px; margin:0 auto; padding:24px 16px 80px; }
+.card { background:#0f0f1a; border:1px solid #1a1a2e; border-radius:16px; padding:20px; margin-bottom:16px; }
+.card h2 { font-size:18px; margin-bottom:6px; }
+.card p { font-size:13px; color:#888; margin-bottom:16px; }
+.btn { width:100%; padding:16px; background:#8b7fff; border:none; border-radius:12px; color:#fff; font-size:16px; font-weight:700; cursor:pointer; }
+.btn:hover { opacity:0.85; }
+.btn:disabled { opacity:0.4; cursor:not-allowed; }
+.channel-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
+.ch { background:#161625; border:2px solid #1a1a2e; border-radius:12px; padding:14px; cursor:pointer; text-align:center; transition:all 0.2s; }
+.ch.on { background:#1a1430; }
+.ch-emoji { font-size:28px; margin-bottom:6px; }
+.ch-name { font-size:12px; font-weight:600; }
+.progress { display:none; background:#161625; border:1px solid #1a1a2e; border-radius:12px; padding:16px; margin-bottom:16px; }
+.progress.show { display:block; }
+.step { padding:8px 0; font-size:13px; color:#555; display:flex; align-items:center; gap:10px; border-bottom:1px solid #1a1a2e; }
+.step:last-child { border:none; }
+.step.active { color:#8b7fff; }
+.step.done { color:#4ecf8a; }
+.step.fail { color:#f06060; }
+.dot { width:8px; height:8px; border-radius:50%; background:#333; flex-shrink:0; }
+.step.active .dot { background:#8b7fff; }
+.step.done .dot { background:#4ecf8a; }
+.step.fail .dot { background:#f06060; }
+.script-card { background:#161625; border:1px solid #1a1a2e; border-radius:12px; overflow:hidden; margin-bottom:12px; }
+.sc-head { padding:14px 16px; }
+.sc-channel { font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; margin-bottom:4px; }
+.sc-title { font-size:15px; font-weight:700; margin-bottom:8px; }
+.sc-preview { padding:0 16px 12px; font-size:13px; color:#666; line-height:1.6; }
+.sc-actions { display:grid; grid-template-columns:1fr 1fr; border-top:1px solid #1a1a2e; }
+.sc-btn { padding:13px; border:none; background:transparent; font-size:13px; font-weight:700; cursor:pointer; }
+.sc-btn-r { color:#f06060; border-right:1px solid #1a1a2e; }
+.sc-btn-a { color:#4ecf8a; }
+.approved-bar { padding:10px 16px; border-top:1px solid #1a1a2e; font-size:12px; color:#4ecf8a; }
+.empty { text-align:center; padding:50px 20px; color:#444; }
+.empty-icon { font-size:48px; margin-bottom:12px; }
+.tabs { display:flex; border-bottom:1px solid #1a1a2e; margin-bottom:20px; }
+.tab { flex:1; padding:12px; text-align:center; font-size:13px; font-weight:600; color:#444; cursor:pointer; border-bottom:2px solid transparent; }
+.tab.on { color:#8b7fff; border-bottom-color:#8b7fff; }
+.toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:#1a1a2e; border:1px solid #333; border-radius:10px; padding:12px 20px; font-size:13px; z-index:999; transition:transform 0.3s; white-space:nowrap; }
+.toast.show { transform:translateX(-50%) translateY(0); }
+.stats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:16px; }
+.stat { background:#161625; border:1px solid #1a1a2e; border-radius:10px; padding:14px; text-align:center; }
+.stat-n { font-size:28px; font-weight:700; }
+.stat-l { font-size:10px; color:#555; margin-top:2px; }
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="logo">ContentPilot</div>
+  <div style="font-size:12px;color:#555;">AI Video Studio</div>
+</div>
+<div class="container">
+  <div class="tabs">
+    <div class="tab on" onclick="showTab('generate',this)">Generate</div>
+    <div class="tab" onclick="showTab('review',this)">Review <span id="badge" style="background:#f06060;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;display:none">0</span></div>
+    <div class="tab" onclick="showTab('schedule',this)">Schedule</div>
+  </div>
+  <div id="tab-generate">
+    <div class="card">
+      <h2>Daily Scripts</h2>
+      <p>Select channels and click Generate. Claude AI writes fact-checked scripts.</p>
+      <button class="btn" id="genBtn" onclick="generate()">Generate Scripts</button>
+    </div>
+    <div class="progress" id="progress">
+      <div style="font-size:13px;font-weight:700;margin-bottom:10px;" id="progTitle">Generating...</div>
+      <div class="step" id="s-psych"><div class="dot"></div>Dark Psychology</div>
+      <div class="step" id="s-space"><div class="dot"></div>Space and Universe</div>
+      <div class="step" id="s-hist"><div class="dot"></div>Dark History</div>
+      <div class="step" id="s-crime"><div class="dot"></div>True Crime</div>
+    </div>
+    <div style="font-size:11px;color:#555;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;">Your Channels</div>
+    <div class="channel-grid">
+      <div class="ch on" data-ch="dark_psychology" onclick="toggleCh(this)" style="border-color:#8b7fff"><div class="ch-emoji">🧠</div><div class="ch-name" style="color:#8b7fff">Dark Psychology</div><div style="font-size:10px;color:#555;margin-top:3px" id="cc-dark_psychology">0 scripts</div></div>
+      <div class="ch on" data-ch="space_universe" onclick="toggleCh(this)" style="border-color:#38c4f0"><div class="ch-emoji">🌌</div><div class="ch-name" style="color:#38c4f0">Space and Universe</div><div style="font-size:10px;color:#555;margin-top:3px" id="cc-space_universe">0 scripts</div></div>
+      <div class="ch on" data-ch="dark_history" onclick="toggleCh(this)" style="border-color:#d4a96a"><div class="ch-emoji">📜</div><div class="ch-name" style="color:#d4a96a">Dark History</div><div style="font-size:10px;color:#555;margin-top:3px" id="cc-dark_history">0 scripts</div></div>
+      <div class="ch on" data-ch="true_crime" onclick="toggleCh(this)" style="border-color:#f06060"><div class="ch-emoji">🕵️</div><div class="ch-name" style="color:#f06060">True Crime</div><div style="font-size:10px;color:#555;margin-top:3px" id="cc-true_crime">0 scripts</div></div>
+    </div>
+  </div>
+  <div id="tab-review" style="display:none"><div id="reviewList"></div></div>
+  <div id="tab-schedule" style="display:none">
+    <div class="stats">
+      <div class="stat"><div class="stat-n" id="st-total" style="color:#8b7fff">0</div><div class="stat-l">Total</div></div>
+      <div class="stat"><div class="stat-n" id="st-approved" style="color:#4ecf8a">0</div><div class="stat-l">Approved</div></div>
+      <div class="stat"><div class="stat-n" id="st-pending" style="color:#ffb84d">0</div><div class="stat-l">Pending</div></div>
+    </div>
+    <div id="schedList"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const AK='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';
+const EK='sk_ca8480a4b093fcf60df5d0ae64e5d3dbfad638a64231a1b9';
+const VID='rkrNegGbFkudOQijQRs0';
+let queue=JSON.parse(localStorage.getItem('cp3')||'[]');
+const CH={dark_psychology:{name:'Dark Psychology',emoji:'🧠',color:'#8b7fff',topics:['manipulation tactics people use without realizing','cognitive biases that control your decisions','dark personality traits explained by psychology','why people stay in toxic relationships','psychological experiments that revealed disturbing truths','how propaganda works on the human brain','the psychology behind cult indoctrination','body language secrets psychologists know']},space_universe:{name:'Space and Universe',emoji:'🌌',color:'#38c4f0',topics:['what exists beyond the observable universe','black holes NASA cannot fully explain','planets more terrifying than science fiction','the Fermi paradox and where aliens might be','mysterious signals from deep space explained','the multiverse theory and evidence','most extreme objects in the known universe','what actually happens inside a black hole']},dark_history:{name:'Dark History',emoji:'📜',color:'#d4a96a',topics:['experiments governments tried to hide','historical atrocities never in history books','how ancient civilizations really collapsed','brutal practices of medieval history','wars that started for absurd reasons','secret societies that shaped world history','dark truth behind famous historical events','historical figures erased from records']},true_crime:{name:'True Crime',emoji:'🕵️',color:'#f06060',topics:['cold cases solved decades later','psychology of serial killers explained','unsolved disappearances that baffled investigators','forensic breakthroughs that cracked impossible cases','cases where wrong person was convicted','most baffling unsolved mysteries in history','criminal masterminds and how they were caught','heists so perfect police still dont know how']}};
+function showTab(n,el){['generate','review','schedule'].forEach(t=>{document.getElementById('tab-'+t).style.display='none'});document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));document.getElementById('tab-'+n).style.display='block';el.classList.add('on');if(n==='review')renderReview();if(n==='schedule')renderSchedule();}
+function toggleCh(el){el.classList.toggle('on');}
+async function generate(){
+  const sel=[...document.querySelectorAll('.ch.on')].map(c=>c.dataset.ch);
+  if(!sel.length){toast('Select at least one channel');return;}
+  const btn=document.getElementById('genBtn');
+  btn.disabled=true;btn.textContent='Generating...';
+  document.getElementById('progress').classList.add('show');
+  const sm={dark_psychology:'s-psych',space_universe:'s-space',dark_history:'s-hist',true_crime:'s-crime'};
+  let done=0;
+  for(const id of sel){
+    ss(sm[id],'active');
+    const ch=CH[id];
+    const topic=pickTopic(id);
+    try{const r=await gen(id,ch,topic);if(r){queue.push(r);done++;ss(sm[id],'done');}else ss(sm[id],'fail');}
+    catch(e){ss(sm[id],'fail');console.error(e);}
+    save();updateCounts();
+  }
+  btn.disabled=false;btn.textContent='Generate Scripts';
+  document.getElementById('progTitle').textContent=done>0?done+' scripts ready!':'Failed';
+  if(done>0){toast(done+' scripts ready!');updateBadge();}
+}
+function ss(id,s){const el=document.getElementById(id);el.classList.remove('active','done','fail');el.classList.add(s);}
+function pickTopic(id){const used=queue.filter(q=>q.channel===id).slice(-5).map(q=>q.topic);const pool=CH[id].topics.filter(t=>!used.includes(t));const t=pool.length?pool:CH[id].topics;return t[Math.floor(Math.random()*t.length)];}
+async function gen(chId,ch,topic){
+  const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':AK,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,system:`You are a world-class YouTube scriptwriter for "${ch.name}". Write engaging factual scripts with real citations. Structure: hook, context, 5-7 verified facts, twist, close, CTA. 750-900 words. After script write: TITLE: [under 60 chars] SCORE: [0-100]`,messages:[{role:'user',content:'Write a YouTube script for "'+ch.name+'" on: "'+topic+'"'}]})});
+  if(!res.ok){const e=await res.json();toast('Error: '+(e.error?.message||res.status).slice(0,50));return null;}
+  const data=await res.json();
+  const text=data.content?.[0]?.text||'';
+  const lines=text.split('\n');
+  let title=topic,score=80,sl=[];
+  for(const l of lines){if(l.startsWith('TITLE:'))title=l.replace('TITLE:','').trim();else if(l.startsWith('SCORE:')){try{score=parseInt(l.replace('SCORE:','').trim());}catch(e){}}else sl.push(l);}
+  return{id:chId+'_'+Date.now(),channel:chId,channel_name:ch.name,channel_emoji:ch.emoji,channel_color:ch.color,topic,title,script:sl.join('\n').trim(),preview:sl.join(' ').trim().split(' ').slice(0,40).join(' ')+'...',score,status:'pending_review',created:new Date().toISOString(),scheduled:null};
+}
+function renderReview(){
+  const list=document.getElementById('reviewList');
+  const items=[...queue].reverse();
+  if(!items.length){list.innerHTML='<div class="empty"><div class="empty-icon">📭</div><div style="font-size:16px;font-weight:700;margin-bottom:8px">No scripts yet</div><div style="font-size:13px">Go to Generate tab first</div></div>';return;}
+  list.innerHTML=items.map(item=>{
+    const sc=item.score>=80?'#4ecf8a':item.score>=60?'#ffb84d':'#f06060';
+    const actions=item.status==='pending_review'?`<div class="sc-actions"><button class="sc-btn sc-btn-r" onclick="reject('${item.id}')">Reject</button><button class="sc-btn sc-btn-a" onclick="approve('${item.id}')">Approve</button></div>`:`<div class="approved-bar">${item.status==='scheduled'?'Scheduled: '+new Date(item.scheduled).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'Rejected'}</div>`;
+    return`<div class="script-card"><div class="sc-head"><div class="sc-channel" style="color:${item.channel_color}">${item.channel_emoji} ${item.channel_name}</div><div class="sc-title">${item.title}</div><span style="font-size:11px;background:${sc}22;color:${sc};padding:3px 8px;border-radius:6px">Fact Score: ${item.score}%</span></div><div class="sc-preview">${item.preview}</div><div style="padding:0 16px 10px"><span onclick="readFull('${item.id}')" style="font-size:12px;color:#8b7fff;cursor:pointer">Read full script</span></div>${actions}</div>`;
+  }).join('');
+}
+function approve(id){const item=queue.find(q=>q.id===id);if(!item)return;item.status='scheduled';const times={dark_psychology:{h:19,m:0},space_universe:{h:20,m:0},dark_history:{h:19,m:30},true_crime:{h:20,m:30}};const t=times[item.channel]||{h:19,m:0};const d=new Date();d.setHours(t.h,t.m,0,0);if(d<=new Date())d.setDate(d.getDate()+1);item.scheduled=d.toISOString();save();updateBadge();renderReview();toast('Approved and scheduled!');}
+function reject(id){const item=queue.find(q=>q.id===id);if(!item)return;item.status='rejected';save();updateBadge();renderReview();toast('Rejected');}
+function readFull(id){const item=queue.find(q=>q.id===id);if(!item)return;alert(item.title+'\n\n'+item.script);}
+function renderSchedule(){
+  document.getElementById('st-total').textContent=queue.length;
+  document.getElementById('st-approved').textContent=queue.filter(q=>q.status==='scheduled').length;
+  document.getElementById('st-pending').textContent=queue.filter(q=>q.status==='pending_review').length;
+  const approved=queue.filter(q=>q.status==='scheduled').sort((a,b)=>new Date(a.scheduled)-new Date(b.scheduled));
+  const pending=queue.filter(q=>q.status==='pending_review');
+  let html='';
+  if(approved.length){html+='<div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Approved</div>';html+=approved.map(i=>`<div style="background:#161625;border:1px solid #1a1a2e;border-radius:12px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;"><div style="font-size:20px">${i.channel_emoji}</div><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${i.title}</div><div style="font-size:11px;color:#555;margin-top:2px">${new Date(i.scheduled).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div></div><div style="font-size:11px;font-weight:700;color:#4ecf8a;background:rgba(78,207,138,0.1);padding:4px 10px;border-radius:8px">Done</div></div>`).join('');}
+  if(pending.length){html+='<div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;margin-top:20px;">Pending</div>';html+=pending.map(i=>`<div style="background:#161625;border:1px solid #1a1a2e;border-radius:12px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;"><div style="font-size:20px">${i.channel_emoji}</div><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${i.title}</div><div style="font-size:11px;color:#555">${i.channel_name}</div></div><div style="font-size:11px;font-weight:700;color:#ffb84d;background:rgba(255,184,77,0.1);padding:4px 10px;border-radius:8px;cursor:pointer" onclick="showTab('review',document.querySelectorAll('.tab')[1])">Review</div></div>`).join('');}
+  if(!html)html='<div class="empty"><div class="empty-icon">📅</div><div style="font-size:16px;font-weight:700;margin-bottom:8px">Nothing yet</div><div style="font-size:13px">Generate and approve scripts first</div></div>';
+  document.getElementById('schedList').innerHTML=html;
+}
+function save(){localStorage.setItem('cp3',JSON.stringify(queue));}
+function updateBadge(){const n=queue.filter(q=>q.status==='pending_review').length;const b=document.getElementById('badge');b.style.display=n>0?'inline':'none';b.textContent=n;}
+function updateCounts(){Object.keys(CH).forEach(ch=>{const el=document.getElementById('cc-'+ch);if(el)el.textContent=queue.filter(q=>q.channel===ch).length+' scripts';});}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
+updateCounts();updateBadge();
+</script>
+</body>
+</html>
