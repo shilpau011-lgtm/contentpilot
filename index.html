@@ -2,1485 +2,172 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#07070f">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ContentPilot</title>
-<link rel="manifest" href="#" />
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Inter:wght@300;400;500;600&display=swap');
-
-/* ── TOKENS ── */
-:root {
-  --bg: #07070f;
-  --s1: #0f0f1a;
-  --s2: #161625;
-  --s3: #1e1e32;
-  --border: rgba(255,255,255,0.07);
-  --text: #eceaf8;
-  --muted: #56546e;
-  --psych: #8b7fff;
-  --space: #38c4f0;
-  --hist: #d4a96a;
-  --crime: #f06060;
-  --green: #4ecf8a;
-  --warn: #ffb84d;
-  --r: 14px;
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
-}
-
-* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-
-html, body {
-  height: 100%;
-  overflow: hidden;
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Inter', sans-serif;
-  -webkit-font-smoothing: antialiased;
-}
-
-/* ── APP SHELL ── */
-.app {
-  height: 100dvh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-/* ── SCREENS ── */
-.screen {
-  display: none;
-  flex: 1;
-  flex-direction: column;
-  overflow: hidden;
-}
-.screen.active { display: flex; }
-
-/* ── TOP BAR ── */
-.topbar {
-  padding: 16px 20px 12px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--border);
-  background: rgba(7,7,15,0.95);
-  backdrop-filter: blur(20px);
-  flex-shrink: 0;
-}
-
-.topbar-title {
-  font-family: 'Syne', sans-serif;
-  font-size: 17px;
-  font-weight: 800;
-  letter-spacing: -0.3px;
-}
-
-.topbar-sub {
-  font-size: 11px;
-  color: var(--muted);
-  margin-top: 1px;
-}
-
-.topbar-badge {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 20px;
-  background: rgba(139,127,255,0.12);
-  border: 1px solid rgba(139,127,255,0.2);
-  color: var(--psych);
-}
-
-/* ── SCROLL AREA ── */
-.scroll {
-  flex: 1;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding: 20px 16px;
-  padding-bottom: calc(80px + var(--safe-bottom));
-}
-
-/* ── BOTTOM NAV ── */
-.bottomnav {
-  position: fixed;
-  bottom: 0; left: 0; right: 0;
-  height: calc(64px + var(--safe-bottom));
-  padding-bottom: var(--safe-bottom);
-  background: rgba(10,10,20,0.97);
-  backdrop-filter: blur(24px);
-  border-top: 1px solid var(--border);
-  display: flex;
-  z-index: 100;
-}
-
-.nav-item {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  cursor: pointer;
-  transition: opacity 0.15s;
-  padding-top: 8px;
-}
-
-.nav-icon { font-size: 22px; line-height: 1; }
-.nav-label {
-  font-size: 10px;
-  font-weight: 500;
-  color: var(--muted);
-  letter-spacing: 0.3px;
-}
-
-.nav-item.active .nav-label { color: var(--psych); }
-.nav-item.active .nav-icon { filter: drop-shadow(0 0 6px rgba(139,127,255,0.5)); }
-
-.nav-badge {
-  position: absolute;
-  top: 8px;
-  background: var(--crime);
-  color: #fff;
-  font-size: 9px;
-  font-weight: 700;
-  padding: 1px 5px;
-  border-radius: 10px;
-  min-width: 16px;
-  text-align: center;
-}
-
-/* ── SETUP SCREEN ── */
-.setup-wrap {
-  max-width: 400px;
-  margin: 0 auto;
-  padding: 40px 20px;
-}
-
-.setup-logo {
-  font-family: 'Syne', sans-serif;
-  font-size: 32px;
-  font-weight: 800;
-  margin-bottom: 8px;
-  background: linear-gradient(135deg, var(--psych), var(--space));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.setup-tagline {
-  font-size: 14px;
-  color: var(--muted);
-  line-height: 1.6;
-  margin-bottom: 40px;
-}
-
-.field-label {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 8px;
-}
-
-.field-input {
-  width: 100%;
-  background: var(--s2);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 14px 16px;
-  color: var(--text);
-  font-size: 14px;
-  font-family: 'Inter', sans-serif;
-  outline: none;
-  margin-bottom: 20px;
-  transition: border-color 0.2s;
-}
-.field-input:focus { border-color: var(--psych); }
-.field-input::placeholder { color: var(--muted); }
-
-.field-hint {
-  font-size: 11px;
-  color: var(--muted);
-  margin-top: -14px;
-  margin-bottom: 20px;
-  line-height: 1.5;
-}
-
-.field-hint a { color: var(--psych); text-decoration: none; }
-
-.btn-primary {
-  width: 100%;
-  padding: 16px;
-  background: linear-gradient(135deg, var(--psych), #6b5fff);
-  border: none;
-  border-radius: 14px;
-  color: #fff;
-  font-size: 15px;
-  font-weight: 700;
-  font-family: 'Syne', sans-serif;
-  cursor: pointer;
-  letter-spacing: 0.3px;
-  transition: opacity 0.2s, transform 0.1s;
-}
-.btn-primary:active { transform: scale(0.98); opacity: 0.9; }
-.btn-primary:disabled { opacity: 0.4; }
-
-/* ── GENERATE SCREEN ── */
-.gen-hero {
-  background: linear-gradient(135deg, rgba(139,127,255,0.08), rgba(56,196,240,0.05));
-  border: 1px solid rgba(139,127,255,0.15);
-  border-radius: var(--r);
-  padding: 24px 20px;
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-.gen-hero-title {
-  font-family: 'Syne', sans-serif;
-  font-size: 22px;
-  font-weight: 800;
-  margin-bottom: 6px;
-}
-
-.gen-hero-sub {
-  font-size: 13px;
-  color: var(--muted);
-  margin-bottom: 20px;
-  line-height: 1.5;
-}
-
-.btn-generate {
-  width: 100%;
-  padding: 18px;
-  background: linear-gradient(135deg, var(--psych), #6b5fff);
-  border: none;
-  border-radius: 14px;
-  color: #fff;
-  font-size: 16px;
-  font-weight: 700;
-  font-family: 'Syne', sans-serif;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  transition: opacity 0.2s, transform 0.1s;
-}
-.btn-generate:active { transform: scale(0.98); }
-.btn-generate:disabled { opacity: 0.5; cursor: not-allowed; }
-
-/* Channel cards */
-.channel-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.ch-card {
-  background: var(--s1);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-  padding: 16px 14px;
-  cursor: pointer;
-  transition: all 0.2s;
-  position: relative;
-  overflow: hidden;
-}
-
-.ch-card.selected {
-  border-color: currentColor;
-}
-
-.ch-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-.ch-card.selected::before { opacity: 0.06; background: currentColor; }
-
-.ch-emoji { font-size: 24px; margin-bottom: 8px; }
-.ch-name {
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1.3;
-}
-.ch-count {
-  font-size: 10px;
-  color: var(--muted);
-  margin-top: 4px;
-}
-
-.ch-check {
-  position: absolute;
-  top: 10px; right: 10px;
-  width: 18px; height: 18px;
-  border-radius: 50%;
-  border: 1.5px solid var(--border);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 10px;
-  transition: all 0.2s;
-}
-.ch-card.selected .ch-check {
-  background: currentColor;
-  border-color: currentColor;
-  color: #fff;
-}
-
-/* Progress */
-.progress-wrap {
-  background: var(--s1);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-  padding: 20px;
-  margin-bottom: 16px;
-  display: none;
-}
-.progress-wrap.show { display: block; }
-
-.progress-title {
-  font-size: 13px;
-  font-weight: 600;
-  margin-bottom: 14px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.progress-step {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 0;
-  font-size: 13px;
-  color: var(--muted);
-  border-bottom: 1px solid var(--border);
-  opacity: 0.4;
-  transition: all 0.3s;
-}
-.progress-step:last-child { border-bottom: none; }
-.progress-step.active { color: var(--text); opacity: 1; }
-.progress-step.done { color: var(--green); opacity: 1; }
-.progress-step.error { color: var(--crime); opacity: 1; }
-
-.step-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  background: var(--muted);
-  flex-shrink: 0;
-  transition: all 0.3s;
-}
-.progress-step.active .step-dot {
-  background: var(--psych);
-  box-shadow: 0 0 8px var(--psych);
-  animation: pulse-dot 1s ease-in-out infinite;
-}
-.progress-step.done .step-dot { background: var(--green); }
-.progress-step.error .step-dot { background: var(--crime); }
-
-@keyframes pulse-dot {
-  0%,100% { transform: scale(1); }
-  50% { transform: scale(1.4); }
-}
-
-/* ── REVIEW SCREEN ── */
-.filter-row {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-}
-
-.filter-chip {
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 500;
-  border: 1px solid var(--border);
-  background: var(--s1);
-  color: var(--muted);
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.2s;
-  flex-shrink: 0;
-}
-.filter-chip.active {
-  background: rgba(139,127,255,0.12);
-  border-color: rgba(139,127,255,0.3);
-  color: var(--psych);
-}
-
-.script-card {
-  background: var(--s1);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-  overflow: hidden;
-  margin-bottom: 14px;
-  transition: border-color 0.2s;
-}
-
-.card-top {
-  padding: 16px 16px 12px;
-}
-
-.card-channel {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  margin-bottom: 6px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.card-title {
-  font-family: 'Syne', sans-serif;
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 1.3;
-  margin-bottom: 10px;
-}
-
-.card-meta {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.meta-pill {
-  font-size: 10px;
-  font-weight: 600;
-  padding: 3px 8px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  color: var(--muted);
-}
-
-.score-pill {
-  font-size: 10px;
-  font-weight: 700;
-  padding: 3px 8px;
-  border-radius: 6px;
-}
-
-.card-preview {
-  padding: 0 16px 12px;
-  font-size: 13px;
-  color: #8e8aa8;
-  line-height: 1.7;
-  max-height: 80px;
-  overflow: hidden;
-  position: relative;
-  transition: max-height 0.3s;
-}
-.card-preview.open { max-height: 600px; }
-.card-preview:not(.open)::after {
-  content: '';
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 30px;
-  background: linear-gradient(transparent, var(--s1));
-}
-
-.card-expand {
-  padding: 0 16px 12px;
-  font-size: 12px;
-  color: var(--psych);
-  cursor: pointer;
-}
-
-.card-actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  border-top: 1px solid var(--border);
-}
-
-.card-btn {
-  padding: 14px;
-  border: none;
-  background: transparent;
-  font-size: 13px;
-  font-weight: 600;
-  font-family: 'Inter', sans-serif;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  transition: background 0.15s;
-}
-
-.card-btn-reject {
-  color: var(--crime);
-  border-right: 1px solid var(--border);
-}
-.card-btn-reject:active { background: rgba(240,96,96,0.08); }
-
-.card-btn-approve {
-  color: var(--green);
-}
-.card-btn-approve:active { background: rgba(78,207,138,0.08); }
-
-.card-btn:disabled { opacity: 0.4; }
-
-/* Status cards */
-.card-status-bar {
-  padding: 10px 16px;
-  border-top: 1px solid var(--border);
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-/* Empty state */
-.empty {
-  text-align: center;
-  padding: 60px 20px 40px;
-  color: var(--muted);
-}
-.empty-icon { font-size: 44px; margin-bottom: 14px; }
-.empty-title { font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
-.empty-desc { font-size: 13px; line-height: 1.6; }
-
-/* ── SCHEDULE SCREEN ── */
-.stats-strip {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin-bottom: 20px;
-}
-
-.stat-box {
-  background: var(--s1);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 14px 10px;
-  text-align: center;
-}
-
-.stat-num {
-  font-family: 'Syne', sans-serif;
-  font-size: 28px;
-  font-weight: 800;
-  line-height: 1;
-}
-.stat-lbl { font-size: 10px; color: var(--muted); margin-top: 4px; letter-spacing: 0.3px; }
-
-.section-label {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 10px;
-  margin-top: 20px;
-}
-
-.sched-item {
-  background: var(--s1);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 14px 16px;
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.sched-emoji { font-size: 20px; flex-shrink: 0; }
-
-.sched-body { flex: 1; min-width: 0; }
-.sched-title {
-  font-size: 13px;
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-bottom: 3px;
-}
-.sched-meta { font-size: 11px; color: var(--muted); }
-
-.sched-badge {
-  font-size: 10px;
-  font-weight: 700;
-  padding: 4px 8px;
-  border-radius: 8px;
-  flex-shrink: 0;
-}
-
-/* ── SETTINGS ── */
-.settings-section {
-  background: var(--s1);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-  overflow: hidden;
-  margin-bottom: 16px;
-}
-
-.settings-row {
-  padding: 16px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-.settings-row:last-child { border-bottom: none; }
-
-.settings-label { font-size: 14px; font-weight: 500; }
-.settings-value { font-size: 12px; color: var(--muted); text-align: right; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-.settings-btn {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--psych);
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-family: 'Inter', sans-serif;
-  padding: 0;
-}
-
-/* ── TOAST ── */
-.toast {
-  position: fixed;
-  bottom: calc(72px + var(--safe-bottom) + 12px);
-  left: 50%;
-  transform: translateX(-50%) translateY(20px);
-  background: var(--s2);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 12px;
-  padding: 12px 18px;
-  font-size: 13px;
-  font-weight: 500;
-  z-index: 200;
-  opacity: 0;
-  transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
-  white-space: nowrap;
-  pointer-events: none;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-}
-.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-/* ── MODAL ── */
-.modal-overlay {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,0.7);
-  backdrop-filter: blur(8px);
-  z-index: 300;
-  display: none;
-  align-items: flex-end;
-}
-.modal-overlay.show { display: flex; }
-
-.modal {
-  background: var(--s1);
-  border: 1px solid var(--border);
-  border-radius: 24px 24px 0 0;
-  padding: 24px 20px calc(24px + var(--safe-bottom));
-  width: 100%;
-  max-height: 85vh;
-  overflow-y: auto;
-}
-
-.modal-handle {
-  width: 36px; height: 4px;
-  background: var(--border);
-  border-radius: 4px;
-  margin: 0 auto 20px;
-}
-
-.modal-title {
-  font-family: 'Syne', sans-serif;
-  font-size: 18px;
-  font-weight: 800;
-  margin-bottom: 16px;
-}
-
-.modal-script {
-  font-size: 14px;
-  line-height: 1.8;
-  color: #b0aac8;
-  white-space: pre-wrap;
-}
-
-.modal-close {
-  width: 100%;
-  padding: 14px;
-  background: var(--s2);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  color: var(--text);
-  font-size: 14px;
-  font-weight: 600;
-  font-family: 'Inter', sans-serif;
-  cursor: pointer;
-  margin-top: 20px;
-}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#07070f; color:#fff; font-family:Arial,sans-serif; min-height:100vh; }
+.header { background:#0f0f1a; border-bottom:1px solid #1a1a2e; padding:16px 20px; display:flex; align-items:center; justify-content:space-between; }
+.logo { font-size:20px; font-weight:700; color:#8b7fff; }
+.container { max-width:700px; margin:0 auto; padding:24px 16px 80px; }
+.card { background:#0f0f1a; border:1px solid #1a1a2e; border-radius:16px; padding:20px; margin-bottom:16px; }
+.card h2 { font-size:18px; margin-bottom:6px; }
+.card p { font-size:13px; color:#888; margin-bottom:16px; }
+.btn { width:100%; padding:16px; background:#8b7fff; border:none; border-radius:12px; color:#fff; font-size:16px; font-weight:700; cursor:pointer; }
+.btn:hover { opacity:0.85; }
+.btn:disabled { opacity:0.4; cursor:not-allowed; }
+.channel-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
+.ch { background:#161625; border:2px solid #1a1a2e; border-radius:12px; padding:14px; cursor:pointer; text-align:center; transition:all 0.2s; }
+.ch.on { background:#1a1430; }
+.ch-emoji { font-size:28px; margin-bottom:6px; }
+.ch-name { font-size:12px; font-weight:600; }
+.progress { display:none; background:#161625; border:1px solid #1a1a2e; border-radius:12px; padding:16px; margin-bottom:16px; }
+.progress.show { display:block; }
+.step { padding:8px 0; font-size:13px; color:#555; display:flex; align-items:center; gap:10px; border-bottom:1px solid #1a1a2e; }
+.step:last-child { border:none; }
+.step.active { color:#8b7fff; }
+.step.done { color:#4ecf8a; }
+.step.fail { color:#f06060; }
+.dot { width:8px; height:8px; border-radius:50%; background:#333; flex-shrink:0; }
+.step.active .dot { background:#8b7fff; }
+.step.done .dot { background:#4ecf8a; }
+.step.fail .dot { background:#f06060; }
+.script-card { background:#161625; border:1px solid #1a1a2e; border-radius:12px; overflow:hidden; margin-bottom:12px; }
+.sc-head { padding:14px 16px; }
+.sc-channel { font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; margin-bottom:4px; }
+.sc-title { font-size:15px; font-weight:700; margin-bottom:8px; }
+.sc-preview { padding:0 16px 12px; font-size:13px; color:#666; line-height:1.6; }
+.sc-actions { display:grid; grid-template-columns:1fr 1fr; border-top:1px solid #1a1a2e; }
+.sc-btn { padding:13px; border:none; background:transparent; font-size:13px; font-weight:700; cursor:pointer; }
+.sc-btn-r { color:#f06060; border-right:1px solid #1a1a2e; }
+.sc-btn-a { color:#4ecf8a; }
+.approved-bar { padding:10px 16px; border-top:1px solid #1a1a2e; font-size:12px; color:#4ecf8a; }
+.empty { text-align:center; padding:50px 20px; color:#444; }
+.empty-icon { font-size:48px; margin-bottom:12px; }
+.tabs { display:flex; border-bottom:1px solid #1a1a2e; margin-bottom:20px; }
+.tab { flex:1; padding:12px; text-align:center; font-size:13px; font-weight:600; color:#444; cursor:pointer; border-bottom:2px solid transparent; }
+.tab.on { color:#8b7fff; border-bottom-color:#8b7fff; }
+.toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:#1a1a2e; border:1px solid #333; border-radius:10px; padding:12px 20px; font-size:13px; z-index:999; transition:transform 0.3s; white-space:nowrap; }
+.toast.show { transform:translateX(-50%) translateY(0); }
+.stats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:16px; }
+.stat { background:#161625; border:1px solid #1a1a2e; border-radius:10px; padding:14px; text-align:center; }
+.stat-n { font-size:28px; font-weight:700; }
+.stat-l { font-size:10px; color:#555; margin-top:2px; }
 </style>
 </head>
 <body>
-<div class="app" id="app">
-
-  <!-- ══ SETUP SCREEN ══ -->
-  <div class="screen active" id="screen-setup">
-    <div class="scroll">
-      <div class="setup-wrap">
-        <div class="setup-logo">ContentPilot</div>
-        <div class="setup-tagline">Your personal AI video studio. Generate scripts, review content, and schedule posts — all from your phone.</div>
-
-        <div class="field-label">Anthropic API Key</div>
-        <input type="password" class="field-input" id="apiKeyInput" placeholder="sk-ant-api03-..." />
-        <div class="field-hint">
-          Get your free key at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> → API Keys → Create new key
-        </div>
-
-        <div class="field-label">ElevenLabs API Key</div>
-        <input type="password" class="field-input" id="elevenKeyInput" placeholder="sk_..." />
-        <div class="field-hint">
-          Get your key at <a href="https://elevenlabs.io/app/settings/api-keys" target="_blank">elevenlabs.io</a> → API Keys
-        </div>
-
-        <div class="field-label">ElevenLabs Voice ID (Rudra)</div>
-        <input type="text" class="field-input" id="voiceIdInput" placeholder="Paste Rudra's Voice ID" />
-        <div class="field-hint">
-          Go to elevenlabs.io → Voices → Rudra → click the ID to copy it
-        </div>
-
-        <button class="btn-primary" onclick="saveSetup()">Get Started →</button>
-
-        <div style="text-align:center;margin-top:16px;">
-          <span style="font-size:12px;color:var(--muted);cursor:pointer;" onclick="skipSetup()">Skip for now — enter keys later in Settings</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ══ GENERATE SCREEN ══ -->
-  <div class="screen" id="screen-generate">
-    <div class="topbar">
-      <div>
-        <div class="topbar-title">Generate</div>
-        <div class="topbar-sub">Create today's scripts</div>
-      </div>
-      <div class="topbar-badge" id="genBadge">4 channels</div>
-    </div>
-    <div class="scroll">
-
-      <div class="gen-hero">
-        <div class="gen-hero-title">✨ Daily Scripts</div>
-        <div class="gen-hero-sub">Select channels and tap Generate. AI writes fact-checked scripts for each one.</div>
-        <button class="btn-generate" id="generateBtn" onclick="runGenerate()">
-          <span>⚡</span> Generate Scripts
-        </button>
-      </div>
-
-      <!-- Progress -->
-      <div class="progress-wrap" id="progressWrap">
-        <div class="progress-title">
-          <span id="progressSpinner">⚡</span>
-          <span id="progressTitle">Generating...</span>
-        </div>
-        <div class="progress-step" id="ps-psych">
-          <div class="step-dot"></div>
-          <span>🧠 Dark Psychology</span>
-        </div>
-        <div class="progress-step" id="ps-space">
-          <div class="step-dot"></div>
-          <span>🌌 Space & Universe</span>
-        </div>
-        <div class="progress-step" id="ps-hist">
-          <div class="step-dot"></div>
-          <span>📜 Dark History</span>
-        </div>
-        <div class="progress-step" id="ps-crime">
-          <div class="step-dot"></div>
-          <span>🕵️ True Crime</span>
-        </div>
-      </div>
-
-      <!-- Channel selector -->
-      <div style="font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">Your Channels</div>
-      <div class="channel-grid">
-        <div class="ch-card selected" style="color:var(--psych)" data-ch="dark_psychology" onclick="toggleChannel(this)">
-          <div class="ch-check">✓</div>
-          <div class="ch-emoji">🧠</div>
-          <div class="ch-name">Dark Psychology</div>
-          <div class="ch-count" id="chcount-dark_psychology">0 scripts</div>
-        </div>
-        <div class="ch-card selected" style="color:var(--space)" data-ch="space_universe" onclick="toggleChannel(this)">
-          <div class="ch-check">✓</div>
-          <div class="ch-emoji">🌌</div>
-          <div class="ch-name">Space & Universe</div>
-          <div class="ch-count" id="chcount-space_universe">0 scripts</div>
-        </div>
-        <div class="ch-card selected" style="color:var(--hist)" data-ch="dark_history" onclick="toggleChannel(this)">
-          <div class="ch-check">✓</div>
-          <div class="ch-emoji">📜</div>
-          <div class="ch-name">Dark History</div>
-          <div class="ch-count" id="chcount-dark_history">0 scripts</div>
-        </div>
-        <div class="ch-card selected" style="color:var(--crime)" data-ch="true_crime" onclick="toggleChannel(this)">
-          <div class="ch-check">✓</div>
-          <div class="ch-emoji">🕵️</div>
-          <div class="ch-name">True Crime</div>
-          <div class="ch-count" id="chcount-true_crime">0 scripts</div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- ══ REVIEW SCREEN ══ -->
-  <div class="screen" id="screen-review">
-    <div class="topbar">
-      <div>
-        <div class="topbar-title">Review</div>
-        <div class="topbar-sub">Approve or reject scripts</div>
-      </div>
-      <div class="topbar-badge" id="reviewBadge">0 pending</div>
-    </div>
-    <div class="scroll">
-      <div class="filter-row">
-        <div class="filter-chip active" onclick="filterReview('all', this)">All</div>
-        <div class="filter-chip" onclick="filterReview('pending_review', this)">Pending</div>
-        <div class="filter-chip" onclick="filterReview('scheduled', this)">Approved</div>
-        <div class="filter-chip" onclick="filterReview('rejected', this)">Rejected</div>
-      </div>
-      <div id="reviewList"></div>
-    </div>
-  </div>
-
-  <!-- ══ SCHEDULE SCREEN ══ -->
-  <div class="screen" id="screen-schedule">
-    <div class="topbar">
-      <div>
-        <div class="topbar-title">Schedule</div>
-        <div class="topbar-sub">Your content pipeline</div>
-      </div>
-    </div>
-    <div class="scroll">
-      <div class="stats-strip">
-        <div class="stat-box">
-          <div class="stat-num" id="stat-total" style="color:var(--psych)">0</div>
-          <div class="stat-lbl">Total</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-num" id="stat-approved" style="color:var(--green)">0</div>
-          <div class="stat-lbl">Approved</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-num" id="stat-pending" style="color:var(--warn)">0</div>
-          <div class="stat-lbl">Pending</div>
-        </div>
-      </div>
-      <div id="scheduleList"></div>
-    </div>
-  </div>
-
-  <!-- ══ SETTINGS SCREEN ══ -->
-  <div class="screen" id="screen-settings">
-    <div class="topbar">
-      <div>
-        <div class="topbar-title">Settings</div>
-        <div class="topbar-sub">ContentPilot</div>
-      </div>
-    </div>
-    <div class="scroll">
-
-      <div class="section-label">API Keys</div>
-      <div class="settings-section">
-        <div class="settings-row">
-          <div>
-            <div class="settings-label">Anthropic API Key</div>
-            <div class="settings-value" id="disp-anthropic">Not set</div>
-          </div>
-          <button class="settings-btn" onclick="editKey('anthropic')">Edit</button>
-        </div>
-        <div class="settings-row">
-          <div>
-            <div class="settings-label">ElevenLabs API Key</div>
-            <div class="settings-value" id="disp-eleven">Not set</div>
-          </div>
-          <button class="settings-btn" onclick="editKey('eleven')">Edit</button>
-        </div>
-        <div class="settings-row">
-          <div>
-            <div class="settings-label">Voice ID (Rudra)</div>
-            <div class="settings-value" id="disp-voice">Not set</div>
-          </div>
-          <button class="settings-btn" onclick="editKey('voice')">Edit</button>
-        </div>
-      </div>
-
-      <div class="section-label">Voice Settings</div>
-      <div class="settings-section">
-        <div class="settings-row">
-          <div class="settings-label">Voice Name</div>
-          <div class="settings-value">Rudra — Intense Documentary</div>
-        </div>
-        <div class="settings-row">
-          <div class="settings-label">Stability</div>
-          <div class="settings-value">50%</div>
-        </div>
-        <div class="settings-row">
-          <div class="settings-label">Similarity Boost</div>
-          <div class="settings-value">100%</div>
-        </div>
-      </div>
-
-      <div class="section-label">Posting Schedule</div>
-      <div class="settings-section">
-        <div class="settings-row">
-          <div class="settings-label">🧠 Dark Psychology</div>
-          <div class="settings-value">Mon–Fri, 7:00 PM</div>
-        </div>
-        <div class="settings-row">
-          <div class="settings-label">🌌 Space & Universe</div>
-          <div class="settings-value">Mon–Fri, 8:00 PM</div>
-        </div>
-        <div class="settings-row">
-          <div class="settings-label">📜 Dark History</div>
-          <div class="settings-value">Mon–Fri, 7:30 PM</div>
-        </div>
-        <div class="settings-row">
-          <div class="settings-label">🕵️ True Crime</div>
-          <div class="settings-value">Mon–Fri, 8:30 PM</div>
-        </div>
-      </div>
-
-      <div class="section-label">Data</div>
-      <div class="settings-section">
-        <div class="settings-row">
-          <div class="settings-label">Total Scripts</div>
-          <div class="settings-value" id="disp-count">0</div>
-        </div>
-        <div class="settings-row">
-          <div class="settings-label">Clear All Data</div>
-          <button class="settings-btn" style="color:var(--crime)" onclick="clearData()">Clear</button>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- ══ BOTTOM NAV ══ -->
-  <nav class="bottomnav">
-    <div class="nav-item active" id="nav-generate" onclick="goTo('generate')">
-      <div class="nav-icon">⚡</div>
-      <div class="nav-label">Generate</div>
-    </div>
-    <div class="nav-item" id="nav-review" onclick="goTo('review')" style="position:relative">
-      <div class="nav-icon">📋</div>
-      <div class="nav-label">Review</div>
-      <div class="nav-badge" id="reviewNavBadge" style="display:none">0</div>
-    </div>
-    <div class="nav-item" id="nav-schedule" onclick="goTo('schedule')">
-      <div class="nav-icon">📅</div>
-      <div class="nav-label">Schedule</div>
-    </div>
-    <div class="nav-item" id="nav-settings" onclick="goTo('settings')">
-      <div class="nav-icon">⚙️</div>
-      <div class="nav-label">Settings</div>
-    </div>
-  </nav>
-
+<div class="header">
+  <div class="logo">ContentPilot</div>
+  <div style="font-size:12px;color:#555;">AI Video Studio</div>
 </div>
-
-<!-- Script modal -->
-<div class="modal-overlay" id="scriptModal" onclick="closeModal()">
-  <div class="modal" onclick="event.stopPropagation()">
-    <div class="modal-handle"></div>
-    <div class="modal-title" id="modalTitle"></div>
-    <div class="modal-script" id="modalScript"></div>
-    <button class="modal-close" onclick="closeModal()">Close</button>
+<div class="container">
+  <div class="tabs">
+    <div class="tab on" onclick="showTab('generate',this)">Generate</div>
+    <div class="tab" onclick="showTab('review',this)">Review <span id="badge" style="background:#f06060;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;display:none">0</span></div>
+    <div class="tab" onclick="showTab('schedule',this)">Schedule</div>
+  </div>
+  <div id="tab-generate">
+    <div class="card">
+      <h2>Daily Scripts</h2>
+      <p>Select channels and click Generate. Claude AI writes fact-checked scripts.</p>
+      <button class="btn" id="genBtn" onclick="generate()">Generate Scripts</button>
+    </div>
+    <div class="progress" id="progress">
+      <div style="font-size:13px;font-weight:700;margin-bottom:10px;" id="progTitle">Generating...</div>
+      <div class="step" id="s-psych"><div class="dot"></div>Dark Psychology</div>
+      <div class="step" id="s-space"><div class="dot"></div>Space and Universe</div>
+      <div class="step" id="s-hist"><div class="dot"></div>Dark History</div>
+      <div class="step" id="s-crime"><div class="dot"></div>True Crime</div>
+    </div>
+    <div style="font-size:11px;color:#555;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;">Your Channels</div>
+    <div class="channel-grid">
+      <div class="ch on" data-ch="dark_psychology" onclick="toggleCh(this)" style="border-color:#8b7fff"><div class="ch-emoji">🧠</div><div class="ch-name" style="color:#8b7fff">Dark Psychology</div><div style="font-size:10px;color:#555;margin-top:3px" id="cc-dark_psychology">0 scripts</div></div>
+      <div class="ch on" data-ch="space_universe" onclick="toggleCh(this)" style="border-color:#38c4f0"><div class="ch-emoji">🌌</div><div class="ch-name" style="color:#38c4f0">Space and Universe</div><div style="font-size:10px;color:#555;margin-top:3px" id="cc-space_universe">0 scripts</div></div>
+      <div class="ch on" data-ch="dark_history" onclick="toggleCh(this)" style="border-color:#d4a96a"><div class="ch-emoji">📜</div><div class="ch-name" style="color:#d4a96a">Dark History</div><div style="font-size:10px;color:#555;margin-top:3px" id="cc-dark_history">0 scripts</div></div>
+      <div class="ch on" data-ch="true_crime" onclick="toggleCh(this)" style="border-color:#f06060"><div class="ch-emoji">🕵️</div><div class="ch-name" style="color:#f06060">True Crime</div><div style="font-size:10px;color:#555;margin-top:3px" id="cc-true_crime">0 scripts</div></div>
+    </div>
+  </div>
+  <div id="tab-review" style="display:none"><div id="reviewList"></div></div>
+  <div id="tab-schedule" style="display:none">
+    <div class="stats">
+      <div class="stat"><div class="stat-n" id="st-total" style="color:#8b7fff">0</div><div class="stat-l">Total</div></div>
+      <div class="stat"><div class="stat-n" id="st-approved" style="color:#4ecf8a">0</div><div class="stat-l">Approved</div></div>
+      <div class="stat"><div class="stat-n" id="st-pending" style="color:#ffb84d">0</div><div class="stat-l">Pending</div></div>
+    </div>
+    <div id="schedList"></div>
   </div>
 </div>
-
-<!-- Toast -->
 <div class="toast" id="toast"></div>
-
 <script>
-// ── STATE ──────────────────────────────────────────────────────────────────
-let queue = JSON.parse(localStorage.getItem('cp_queue') || '[]');
-let settings = JSON.parse(localStorage.getItem('cp_settings') || '{}');
-// Keys pre-loaded
-settings.anthropicKey = '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';
-settings.elevenKey = 'sk_ca8480a4b093fcf60df5d0ae64e5d3dbfad638a64231a1b9';
-settings.voiceId = 'rkrNegGbFkudOQijQRs0';
-settings.skipSetup = true;
-let currentFilter = 'all';
-
-const CHANNELS = {
-  dark_psychology: {
-    name: 'Dark Psychology', emoji: '🧠', color: 'var(--psych)',
-    topics: [
-      'manipulation tactics people use without realizing',
-      'cognitive biases that secretly control your decisions',
-      'dark personality traits explained by psychology',
-      'why people stay in toxic relationships — the science',
-      'psychological experiments that changed how we see humans',
-      'how propaganda hijacks the human brain',
-      'the psychology behind cult indoctrination',
-      'body language secrets psychologists use to read people'
-    ],
-    avoid: 'Do not target real living individuals negatively. No medical advice.'
-  },
-  space_universe: {
-    name: 'Space & Universe', emoji: '🌌', color: 'var(--space)',
-    topics: [
-      'what exists beyond the observable universe',
-      'black holes NASA cannot fully explain',
-      'planets more terrifying than science fiction',
-      'the Fermi paradox — where are all the aliens',
-      'what actually happens inside a black hole',
-      'mysterious signals from deep space explained',
-      'the multiverse theory and evidence for it',
-      'most extreme objects in the known universe'
-    ],
-    avoid: 'No conspiracy theories. Only verified scientific sources.'
-  },
-  dark_history: {
-    name: 'Dark History', emoji: '📜', color: 'var(--hist)',
-    topics: [
-      'the experiments governments tried to hide',
-      'historical atrocities that never made the history books',
-      'how the greatest ancient civilizations really collapsed',
-      'the most brutal practices of medieval history',
-      'wars that started for the most absurd reasons',
-      'secret societies that genuinely shaped world history',
-      'the dark truth behind famous historical events',
-      'historical figures who were erased from records'
-    ],
-    avoid: 'No glorification of violence. No targeting of ethnic groups.'
-  },
-  true_crime: {
-    name: 'True Crime', emoji: '🕵️', color: 'var(--crime)',
-    topics: [
-      'cold cases that were solved decades later',
-      'the psychology of serial killers explained by experts',
-      'unsolved disappearances that baffled investigators',
-      'forensic breakthroughs that cracked impossible cases',
-      'cases where the completely wrong person was convicted',
-      'heists so perfect investigators still have no idea how',
-      'the most baffling unsolved mysteries in criminal history',
-      'criminal masterminds and how they were finally caught'
-    ],
-    avoid: 'No ongoing cases. No living victims without consent. No graphic violence.'
+const AK='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';
+const EK='sk_ca8480a4b093fcf60df5d0ae64e5d3dbfad638a64231a1b9';
+const VID='rkrNegGbFkudOQijQRs0';
+let queue=JSON.parse(localStorage.getItem('cp3')||'[]');
+const CH={dark_psychology:{name:'Dark Psychology',emoji:'🧠',color:'#8b7fff',topics:['manipulation tactics people use without realizing','cognitive biases that control your decisions','dark personality traits explained by psychology','why people stay in toxic relationships','psychological experiments that revealed disturbing truths','how propaganda works on the human brain','the psychology behind cult indoctrination','body language secrets psychologists know']},space_universe:{name:'Space and Universe',emoji:'🌌',color:'#38c4f0',topics:['what exists beyond the observable universe','black holes NASA cannot fully explain','planets more terrifying than science fiction','the Fermi paradox and where aliens might be','mysterious signals from deep space explained','the multiverse theory and evidence','most extreme objects in the known universe','what actually happens inside a black hole']},dark_history:{name:'Dark History',emoji:'📜',color:'#d4a96a',topics:['experiments governments tried to hide','historical atrocities never in history books','how ancient civilizations really collapsed','brutal practices of medieval history','wars that started for absurd reasons','secret societies that shaped world history','dark truth behind famous historical events','historical figures erased from records']},true_crime:{name:'True Crime',emoji:'🕵️',color:'#f06060',topics:['cold cases solved decades later','psychology of serial killers explained','unsolved disappearances that baffled investigators','forensic breakthroughs that cracked impossible cases','cases where wrong person was convicted','most baffling unsolved mysteries in history','criminal masterminds and how they were caught','heists so perfect police still dont know how']}};
+function showTab(n,el){['generate','review','schedule'].forEach(t=>{document.getElementById('tab-'+t).style.display='none'});document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));document.getElementById('tab-'+n).style.display='block';el.classList.add('on');if(n==='review')renderReview();if(n==='schedule')renderSchedule();}
+function toggleCh(el){el.classList.toggle('on');}
+async function generate(){
+  const sel=[...document.querySelectorAll('.ch.on')].map(c=>c.dataset.ch);
+  if(!sel.length){toast('Select at least one channel');return;}
+  const btn=document.getElementById('genBtn');
+  btn.disabled=true;btn.textContent='Generating...';
+  document.getElementById('progress').classList.add('show');
+  const sm={dark_psychology:'s-psych',space_universe:'s-space',dark_history:'s-hist',true_crime:'s-crime'};
+  let done=0;
+  for(const id of sel){
+    ss(sm[id],'active');
+    const ch=CH[id];
+    const topic=pickTopic(id);
+    try{const r=await gen(id,ch,topic);if(r){queue.push(r);done++;ss(sm[id],'done');}else ss(sm[id],'fail');}
+    catch(e){ss(sm[id],'fail');console.error(e);}
+    save();updateCounts();
   }
-};
-
-// ── INIT ───────────────────────────────────────────────────────────────────
-function init() {
-  if (settings.anthropicKey || settings.skipSetup) {
-    goTo('generate');
-  }
-  updateUI();
+  btn.disabled=false;btn.textContent='Generate Scripts';
+  document.getElementById('progTitle').textContent=done>0?done+' scripts ready!':'Failed';
+  if(done>0){toast(done+' scripts ready!');updateBadge();}
 }
-
-// ── NAVIGATION ─────────────────────────────────────────────────────────────
-function goTo(screen) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById(`screen-${screen}`).classList.add('active');
-  document.getElementById(`nav-${screen}`)?.classList.add('active');
-  if (screen === 'review') renderReview();
-  if (screen === 'schedule') renderSchedule();
-  if (screen === 'settings') renderSettings();
-  if (screen === 'generate') renderChannelCounts();
+function ss(id,s){const el=document.getElementById(id);el.classList.remove('active','done','fail');el.classList.add(s);}
+function pickTopic(id){const used=queue.filter(q=>q.channel===id).slice(-5).map(q=>q.topic);const pool=CH[id].topics.filter(t=>!used.includes(t));const t=pool.length?pool:CH[id].topics;return t[Math.floor(Math.random()*t.length)];}
+async function gen(chId,ch,topic){
+  const res=await fetch('https://contentpilot-proxy.shilpaunnitravnook.workers.dev/',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':AK,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,system:`You are a world-class YouTube scriptwriter for "${ch.name}". Write engaging factual scripts with real citations. Structure: hook, context, 5-7 verified facts, twist, close, CTA. 750-900 words. After script write: TITLE: [under 60 chars] SCORE: [0-100]`,messages:[{role:'user',content:'Write a YouTube script for "'+ch.name+'" on: "'+topic+'"'}]})});
+  if(!res.ok){const e=await res.json();toast('Error: '+(e.error?.message||res.status).slice(0,50));return null;}
+  const data=await res.json();
+  const text=data.content?.[0]?.text||'';
+  const lines=text.split('\n');
+  let title=topic,score=80,sl=[];
+  for(const l of lines){if(l.startsWith('TITLE:'))title=l.replace('TITLE:','').trim();else if(l.startsWith('SCORE:')){try{score=parseInt(l.replace('SCORE:','').trim());}catch(e){}}else sl.push(l);}
+  return{id:chId+'_'+Date.now(),channel:chId,channel_name:ch.name,channel_emoji:ch.emoji,channel_color:ch.color,topic,title,script:sl.join('\n').trim(),preview:sl.join(' ').trim().split(' ').slice(0,40).join(' ')+'...',score,status:'pending_review',created:new Date().toISOString(),scheduled:null};
 }
-
-// ── SETUP ──────────────────────────────────────────────────────────────────
-function saveSetup() {
-  const ak = document.getElementById('apiKeyInput').value.trim();
-  const ek = document.getElementById('elevenKeyInput').value.trim();
-  const vk = document.getElementById('voiceIdInput').value.trim();
-  if (!ak && !ek) { toast('⚠️ Enter at least one API key'); return; }
-  if (ak) settings.anthropicKey = ak;
-  if (ek) settings.elevenKey = ek;
-  if (vk) settings.voiceId = vk;
-  saveSettings();
-  goTo('generate');
-  toast('✅ Keys saved!');
-}
-
-function skipSetup() {
-  settings.skipSetup = true;
-  saveSettings();
-  goTo('generate');
-}
-
-// ── GENERATE ───────────────────────────────────────────────────────────────
-function toggleChannel(el) {
-  el.classList.toggle('selected');
-}
-
-async function runGenerate() {
-  if (!settings.anthropicKey) {
-    toast('⚠️ Add your Anthropic API key in Settings first');
-    goTo('settings');
-    return;
-  }
-
-  const selected = [...document.querySelectorAll('.ch-card.selected')].map(c => c.dataset.ch);
-  if (selected.length === 0) { toast('Select at least one channel'); return; }
-
-  const btn = document.getElementById('generateBtn');
-  btn.disabled = true;
-  btn.innerHTML = '<span>⏳</span> Generating...';
-
-  const pw = document.getElementById('progressWrap');
-  pw.classList.add('show');
-
-  const stepMap = {
-    dark_psychology: 'ps-psych',
-    space_universe: 'ps-space',
-    dark_history: 'ps-hist',
-    true_crime: 'ps-crime'
-  };
-
-  let generated = 0;
-
-  for (const chId of selected) {
-    const stepEl = document.getElementById(stepMap[chId]);
-    stepEl.classList.add('active');
-
-    const ch = CHANNELS[chId];
-    const topic = pickTopic(chId);
-
-    try {
-      const result = await generateScript(chId, ch, topic);
-      if (result) {
-        queue.push(result);
-        generated++;
-        stepEl.classList.remove('active');
-        stepEl.classList.add('done');
-        stepEl.querySelector('.step-dot').after(Object.assign(document.createElement('span'), {textContent: ' ✓', style: 'color:var(--green);font-size:11px;margin-left:4px;'}));
-      } else {
-        stepEl.classList.remove('active');
-        stepEl.classList.add('error');
-      }
-    } catch(e) {
-      stepEl.classList.remove('active');
-      stepEl.classList.add('error');
-    }
-
-    saveQueue();
-    updateUI();
-  }
-
-  btn.disabled = false;
-  btn.innerHTML = '<span>⚡</span> Generate Scripts';
-  document.getElementById('progressTitle').textContent = `Done! ${generated} scripts ready`;
-
-  if (generated > 0) {
-    toast(`🎉 ${generated} scripts ready for review!`);
-    setTimeout(() => goTo('review'), 1500);
-  } else {
-    toast('❌ Generation failed — check your API key in Settings');
-  }
-}
-
-function pickTopic(chId) {
-  const used = queue.filter(q => q.channel === chId).slice(-5).map(q => q.topic);
-  const available = CHANNELS[chId].topics.filter(t => !used.includes(t));
-  const pool = available.length ? available : CHANNELS[chId].topics;
-  return pool[Math.floor(Math.random() * pool.length)];
-}
-
-async function generateScript(chId, ch, topic) {
-  const system = `You are a world-class YouTube scriptwriter for the channel "${ch.name}".
-Your scripts are deeply engaging, 100% factual with real verified citations, written for calm soothing documentary narration.
-Structure: powerful hook → context → 5-7 verified facts with real sources → surprising revelation → emotional close → CTA
-Length: 750-900 words.
-${ch.avoid}
-Write only the script. After the script on a new line write:
-TITLE: [compelling SEO title under 60 chars]
-SCORE: [your factual accuracy confidence 0-100]`;
-
-  const response = await callClaude(system, `Write a complete YouTube script for "${ch.name}" on this topic: "${topic}"\n\nMake it impossible to stop watching. Every fact must be real and citable.`);
-  if (!response) return null;
-
-  const lines = response.split('\n');
-  let title = topic, score = 82, scriptLines = [];
-  for (const line of lines) {
-    if (line.startsWith('TITLE:')) title = line.replace('TITLE:', '').trim();
-    else if (line.startsWith('SCORE:')) { try { score = parseInt(line.replace('SCORE:', '').trim()); } catch(e){} }
-    else scriptLines.push(line);
-  }
-
-  const script = scriptLines.join('\n').trim();
-  const preview = script.split(' ').slice(0, 40).join(' ') + '...';
-
-  return {
-    id: `${chId}_${Date.now()}`,
-    channel: chId,
-    channel_name: ch.name,
-    channel_emoji: ch.emoji,
-    topic, title, script,
-    script_preview: preview,
-    fact_score: score,
-    status: 'pending_review',
-    created_at: new Date().toISOString(),
-    scheduled_time: null
-  };
-}
-
-async function callClaude(system, user) {
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': settings.anthropicKey,
-      'anthropic-version': '2023-06-01'
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1500,
-      system,
-      messages: [{ role: 'user', content: user }]
-    })
-  });
-  if (!res.ok) {
-    const err = await res.json();
-    const msg = err.error?.message || '';
-    if (msg.includes('credit')) toast('⚠️ Anthropic credits needed — add $5 at console.anthropic.com');
-    else toast(`API error: ${msg.slice(0,60)}`);
-    return null;
-  }
-  const data = await res.json();
-  return data.content?.[0]?.text || null;
-}
-
-// ── REVIEW ─────────────────────────────────────────────────────────────────
-function filterReview(f, el) {
-  currentFilter = f;
-  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-  el.classList.add('active');
-  renderReview();
-}
-
-function renderReview() {
-  const list = document.getElementById('reviewList');
-  let items = [...queue].reverse();
-  if (currentFilter !== 'all') items = items.filter(i => i.status === currentFilter);
-
-  const pending = queue.filter(i => i.status === 'pending_review').length;
-  document.getElementById('reviewBadge').textContent = `${pending} pending`;
-
-  if (items.length === 0) {
-    list.innerHTML = `
-      <div class="empty">
-        <div class="empty-icon">${currentFilter === 'all' ? '📭' : '✅'}</div>
-        <div class="empty-title">${currentFilter === 'all' ? 'No scripts yet' : 'Nothing here'}</div>
-        <div class="empty-desc">${currentFilter === 'all' ? 'Tap Generate to create your first batch of scripts' : 'Scripts in this category will appear here'}</div>
-      </div>`;
-    return;
-  }
-
-  list.innerHTML = items.map(item => {
-    const ch = CHANNELS[item.channel];
-    const scoreColor = item.fact_score >= 80 ? 'var(--green)' : item.fact_score >= 60 ? 'var(--warn)' : 'var(--crime)';
-    const statusBadge = item.status === 'pending_review'
-      ? `<span style="background:rgba(255,184,77,0.12);color:var(--warn);border:1px solid rgba(255,184,77,0.2)" class="meta-pill">⏳ Pending</span>`
-      : item.status === 'scheduled'
-      ? `<span style="background:rgba(78,207,138,0.12);color:var(--green);border:1px solid rgba(78,207,138,0.2)" class="meta-pill">✅ Approved</span>`
-      : `<span style="background:rgba(240,96,96,0.12);color:var(--crime);border:1px solid rgba(240,96,96,0.2)" class="meta-pill">❌ Rejected</span>`;
-
-    const actions = item.status === 'pending_review' ? `
-      <div class="card-actions">
-        <button class="card-btn card-btn-reject" onclick="rejectScript('${item.id}')">❌ Reject</button>
-        <button class="card-btn card-btn-approve" onclick="approveScript('${item.id}')">✅ Approve</button>
-      </div>` : `
-      <div class="card-status-bar" style="color:var(--muted)">
-        ${item.status === 'scheduled' ? `📅 Scheduled: ${item.scheduled_time ? new Date(item.scheduled_time).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : 'TBD'}` : '❌ Rejected — will regenerate next run'}
-      </div>`;
-
-    return `
-      <div class="script-card" id="sc-${item.id}">
-        <div class="card-top">
-          <div class="card-channel" style="color:${ch.color}">${item.channel_emoji} ${item.channel_name}</div>
-          <div class="card-title">${item.title}</div>
-          <div class="card-meta">
-            ${statusBadge}
-            <span class="score-pill" style="background:${scoreColor}22;color:${scoreColor};border:1px solid ${scoreColor}44">Fact: ${item.fact_score}%</span>
-          </div>
-        </div>
-        <div class="card-preview" id="prev-${item.id}">${item.script_preview}</div>
-        <div class="card-expand" onclick="readScript('${item.id}')">Read full script →</div>
-        ${actions}
-      </div>`;
+function renderReview(){
+  const list=document.getElementById('reviewList');
+  const items=[...queue].reverse();
+  if(!items.length){list.innerHTML='<div class="empty"><div class="empty-icon">📭</div><div style="font-size:16px;font-weight:700;margin-bottom:8px">No scripts yet</div><div style="font-size:13px">Go to Generate tab first</div></div>';return;}
+  list.innerHTML=items.map(item=>{
+    const sc=item.score>=80?'#4ecf8a':item.score>=60?'#ffb84d':'#f06060';
+    const actions=item.status==='pending_review'?`<div class="sc-actions"><button class="sc-btn sc-btn-r" onclick="reject('${item.id}')">Reject</button><button class="sc-btn sc-btn-a" onclick="approve('${item.id}')">Approve</button></div>`:`<div class="approved-bar">${item.status==='scheduled'?'Scheduled: '+new Date(item.scheduled).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'Rejected'}</div>`;
+    return`<div class="script-card"><div class="sc-head"><div class="sc-channel" style="color:${item.channel_color}">${item.channel_emoji} ${item.channel_name}</div><div class="sc-title">${item.title}</div><span style="font-size:11px;background:${sc}22;color:${sc};padding:3px 8px;border-radius:6px">Fact Score: ${item.score}%</span></div><div class="sc-preview">${item.preview}</div><div style="padding:0 16px 10px"><span onclick="readFull('${item.id}')" style="font-size:12px;color:#8b7fff;cursor:pointer">Read full script</span></div>${actions}</div>`;
   }).join('');
 }
-
-function approveScript(id) {
-  const item = queue.find(q => q.id === id);
-  if (!item) return;
-  item.status = 'scheduled';
-  item.approved_at = new Date().toISOString();
-  item.scheduled_time = getNextPostTime(item.channel);
-  saveQueue(); updateUI(); renderReview();
-  toast(`✅ Approved! Scheduled for ${new Date(item.scheduled_time).toLocaleDateString('en-GB',{weekday:'short',hour:'2-digit',minute:'2-digit'})}`);
+function approve(id){const item=queue.find(q=>q.id===id);if(!item)return;item.status='scheduled';const times={dark_psychology:{h:19,m:0},space_universe:{h:20,m:0},dark_history:{h:19,m:30},true_crime:{h:20,m:30}};const t=times[item.channel]||{h:19,m:0};const d=new Date();d.setHours(t.h,t.m,0,0);if(d<=new Date())d.setDate(d.getDate()+1);item.scheduled=d.toISOString();save();updateBadge();renderReview();toast('Approved and scheduled!');}
+function reject(id){const item=queue.find(q=>q.id===id);if(!item)return;item.status='rejected';save();updateBadge();renderReview();toast('Rejected');}
+function readFull(id){const item=queue.find(q=>q.id===id);if(!item)return;alert(item.title+'\n\n'+item.script);}
+function renderSchedule(){
+  document.getElementById('st-total').textContent=queue.length;
+  document.getElementById('st-approved').textContent=queue.filter(q=>q.status==='scheduled').length;
+  document.getElementById('st-pending').textContent=queue.filter(q=>q.status==='pending_review').length;
+  const approved=queue.filter(q=>q.status==='scheduled').sort((a,b)=>new Date(a.scheduled)-new Date(b.scheduled));
+  const pending=queue.filter(q=>q.status==='pending_review');
+  let html='';
+  if(approved.length){html+='<div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Approved</div>';html+=approved.map(i=>`<div style="background:#161625;border:1px solid #1a1a2e;border-radius:12px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;"><div style="font-size:20px">${i.channel_emoji}</div><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${i.title}</div><div style="font-size:11px;color:#555;margin-top:2px">${new Date(i.scheduled).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div></div><div style="font-size:11px;font-weight:700;color:#4ecf8a;background:rgba(78,207,138,0.1);padding:4px 10px;border-radius:8px">Done</div></div>`).join('');}
+  if(pending.length){html+='<div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;margin-top:20px;">Pending</div>';html+=pending.map(i=>`<div style="background:#161625;border:1px solid #1a1a2e;border-radius:12px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;"><div style="font-size:20px">${i.channel_emoji}</div><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${i.title}</div><div style="font-size:11px;color:#555">${i.channel_name}</div></div><div style="font-size:11px;font-weight:700;color:#ffb84d;background:rgba(255,184,77,0.1);padding:4px 10px;border-radius:8px;cursor:pointer" onclick="showTab('review',document.querySelectorAll('.tab')[1])">Review</div></div>`).join('');}
+  if(!html)html='<div class="empty"><div class="empty-icon">📅</div><div style="font-size:16px;font-weight:700;margin-bottom:8px">Nothing yet</div><div style="font-size:13px">Generate and approve scripts first</div></div>';
+  document.getElementById('schedList').innerHTML=html;
 }
-
-function rejectScript(id) {
-  const item = queue.find(q => q.id === id);
-  if (!item) return;
-  item.status = 'rejected';
-  item.rejected_at = new Date().toISOString();
-  saveQueue(); updateUI(); renderReview();
-  toast('❌ Rejected');
-}
-
-function readScript(id) {
-  const item = queue.find(q => q.id === id);
-  if (!item) return;
-  document.getElementById('modalTitle').textContent = item.title;
-  document.getElementById('modalScript').textContent = item.script;
-  document.getElementById('scriptModal').classList.add('show');
-}
-
-function closeModal() {
-  document.getElementById('scriptModal').classList.remove('show');
-}
-
-function getNextPostTime(chId) {
-  const times = {
-    dark_psychology: {h:19,m:0},
-    space_universe: {h:20,m:0},
-    dark_history: {h:19,m:30},
-    true_crime: {h:20,m:30}
-  };
-  const t = times[chId] || {h:19,m:0};
-  const now = new Date();
-  const candidate = new Date(now);
-  candidate.setHours(t.h, t.m, 0, 0);
-  if (candidate <= now) candidate.setDate(candidate.getDate() + 1);
-  return candidate.toISOString();
-}
-
-// ── SCHEDULE ───────────────────────────────────────────────────────────────
-function renderSchedule() {
-  document.getElementById('stat-total').textContent = queue.length;
-  document.getElementById('stat-approved').textContent = queue.filter(q=>q.status==='scheduled').length;
-  document.getElementById('stat-pending').textContent = queue.filter(q=>q.status==='pending_review').length;
-
-  const list = document.getElementById('scheduleList');
-  const approved = queue.filter(q => q.status === 'scheduled').sort((a,b) => new Date(a.scheduled_time) - new Date(b.scheduled_time));
-  const pending = queue.filter(q => q.status === 'pending_review');
-
-  let html = '';
-
-  if (approved.length > 0) {
-    html += '<div class="section-label">📅 Approved & Scheduled</div>';
-    html += approved.map(item => {
-      const ch = CHANNELS[item.channel];
-      const time = item.scheduled_time ? new Date(item.scheduled_time).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : 'TBD';
-      return `
-        <div class="sched-item">
-          <div class="sched-emoji">${item.channel_emoji}</div>
-          <div class="sched-body">
-            <div class="sched-title">${item.title}</div>
-            <div class="sched-meta">${time}</div>
-          </div>
-          <div class="sched-badge" style="background:rgba(78,207,138,0.12);color:var(--green)">✓</div>
-        </div>`;
-    }).join('');
-  }
-
-  if (pending.length > 0) {
-    html += '<div class="section-label">⏳ Awaiting Review</div>';
-    html += pending.map(item => `
-      <div class="sched-item">
-        <div class="sched-emoji">${item.channel_emoji}</div>
-        <div class="sched-body">
-          <div class="sched-title">${item.title}</div>
-          <div class="sched-meta">${item.channel_name}</div>
-        </div>
-        <div class="sched-badge" style="background:rgba(255,184,77,0.12);color:var(--warn)" onclick="goTo('review')">Review</div>
-      </div>`).join('');
-  }
-
-  if (html === '') {
-    html = `<div class="empty"><div class="empty-icon">📅</div><div class="empty-title">Nothing scheduled yet</div><div class="empty-desc">Generate and approve scripts to see your schedule here</div></div>`;
-  }
-
-  list.innerHTML = html;
-}
-
-// ── SETTINGS ───────────────────────────────────────────────────────────────
-function renderSettings() {
-  document.getElementById('disp-anthropic').textContent = settings.anthropicKey ? '••••' + settings.anthropicKey.slice(-6) : 'Not set';
-  document.getElementById('disp-eleven').textContent = settings.elevenKey ? '••••' + settings.elevenKey.slice(-6) : 'Not set';
-  document.getElementById('disp-voice').textContent = settings.voiceId || 'Not set';
-  document.getElementById('disp-count').textContent = queue.length;
-}
-
-function editKey(type) {
-  const labels = { anthropic: 'Anthropic API Key', eleven: 'ElevenLabs API Key', voice: 'Voice ID (Rudra)' };
-  const keys = { anthropic: 'anthropicKey', eleven: 'elevenKey', voice: 'voiceId' };
-  const val = prompt(labels[type] + ':', settings[keys[type]] || '');
-  if (val !== null && val.trim()) {
-    settings[keys[type]] = val.trim();
-    saveSettings();
-    renderSettings();
-    toast('✅ Key updated');
-  }
-}
-
-function clearData() {
-  if (confirm('Clear all scripts and settings?')) {
-    queue = [];
-    settings = {};
-    saveQueue();
-    saveSettings();
-    updateUI();
-    toast('🗑️ All data cleared');
-    goTo('setup');
-    document.getElementById('screen-setup').classList.add('active');
-  }
-}
-
-// ── UI UPDATES ─────────────────────────────────────────────────────────────
-function updateUI() {
-  const pending = queue.filter(q => q.status === 'pending_review').length;
-  const badge = document.getElementById('reviewNavBadge');
-  badge.style.display = pending > 0 ? 'block' : 'none';
-  badge.textContent = pending;
-  document.getElementById('reviewBadge').textContent = `${pending} pending`;
-  renderChannelCounts();
-}
-
-function renderChannelCounts() {
-  Object.keys(CHANNELS).forEach(ch => {
-    const count = queue.filter(q => q.channel === ch).length;
-    const el = document.getElementById(`chcount-${ch}`);
-    if (el) el.textContent = `${count} script${count !== 1 ? 's' : ''}`;
-  });
-}
-
-// ── PERSISTENCE ────────────────────────────────────────────────────────────
-function saveQueue() { localStorage.setItem('cp_queue', JSON.stringify(queue)); }
-function saveSettings() { localStorage.setItem('cp_settings', JSON.stringify(settings)); }
-
-// ── TOAST ──────────────────────────────────────────────────────────────────
-function toast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3500);
-}
-
-// ── START ──────────────────────────────────────────────────────────────────
-init();
+function save(){localStorage.setItem('cp3',JSON.stringify(queue));}
+function updateBadge(){const n=queue.filter(q=>q.status==='pending_review').length;const b=document.getElementById('badge');b.style.display=n>0?'inline':'none';b.textContent=n;}
+function updateCounts(){Object.keys(CH).forEach(ch=>{const el=document.getElementById('cc-'+ch);if(el)el.textContent=queue.filter(q=>q.channel===ch).length+' scripts';});}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
+updateCounts();updateBadge();
 </script>
 </body>
 </html>
