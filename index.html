@@ -5,305 +5,420 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ContentPilot</title>
 <style>
-* { margin:0; padding:0; box-sizing:border-box; }
-body { background:#07070f; color:#fff; font-family:Arial,sans-serif; min-height:100vh; }
-.header { background:#0f0f1a; border-bottom:1px solid #1a1a2e; padding:16px 20px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; }
-.logo { font-size:20px; font-weight:700; color:#8b7fff; }
-.container { max-width:700px; margin:0 auto; padding:24px 16px 80px; }
-.card { background:#0f0f1a; border:1px solid #1a1a2e; border-radius:16px; padding:20px; margin-bottom:16px; }
-.card h2 { font-size:18px; margin-bottom:6px; }
-.card p { font-size:13px; color:#888; margin-bottom:16px; }
-.btn { width:100%; padding:16px; background:#8b7fff; border:none; border-radius:12px; color:#fff; font-size:16px; font-weight:700; cursor:pointer; }
-.btn:hover { opacity:0.85; }
-.btn:disabled { opacity:0.4; cursor:not-allowed; }
-.btn-green { background:#4ecf8a; color:#000; }
-.btn-red { background:#f06060; }
-.channel-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
-.ch { background:#161625; border:2px solid #1a1a2e; border-radius:12px; padding:14px; cursor:pointer; text-align:center; transition:all 0.2s; }
-.ch.on { background:#1a1430; }
-.ch-emoji { font-size:28px; margin-bottom:6px; }
-.ch-name { font-size:12px; font-weight:600; }
-.progress { display:none; background:#161625; border:1px solid #1a1a2e; border-radius:12px; padding:16px; margin-bottom:16px; }
-.progress.show { display:block; }
-.step { padding:8px 0; font-size:13px; color:#555; display:flex; align-items:center; gap:10px; border-bottom:1px solid #1a1a2e; }
-.step:last-child { border:none; }
-.step.active { color:#8b7fff; }
-.step.done { color:#4ecf8a; }
-.step.fail { color:#f06060; }
-.dot { width:8px; height:8px; border-radius:50%; background:#333; flex-shrink:0; }
-.step.active .dot { background:#8b7fff; animation:pulse 1s infinite; }
-.step.done .dot { background:#4ecf8a; }
-.step.fail .dot { background:#f06060; }
-@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.5)} }
-.script-card { background:#161625; border:1px solid #1a1a2e; border-radius:12px; overflow:hidden; margin-bottom:12px; }
-.sc-head { padding:14px 16px; }
-.sc-channel { font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; margin-bottom:4px; }
-.sc-title { font-size:15px; font-weight:700; margin-bottom:8px; }
-.sc-preview { padding:0 16px 12px; font-size:13px; color:#666; line-height:1.6; }
-.sc-actions { display:grid; grid-template-columns:1fr 1fr; border-top:1px solid #1a1a2e; }
-.sc-btn { padding:13px; border:none; background:transparent; font-size:13px; font-weight:700; cursor:pointer; }
-.sc-btn-r { color:#f06060; border-right:1px solid #1a1a2e; }
-.sc-btn-a { color:#4ecf8a; }
-.sc-btn-r:hover { background:rgba(240,96,96,0.08); }
-.sc-btn-a:hover { background:rgba(78,207,138,0.08); }
-.status-bar { padding:10px 16px; border-top:1px solid #1a1a2e; font-size:12px; }
-.empty { text-align:center; padding:50px 20px; color:#444; }
-.empty-icon { font-size:48px; margin-bottom:12px; }
-.tabs { display:flex; border-bottom:1px solid #1a1a2e; margin-bottom:20px; }
-.tab { flex:1; padding:12px; text-align:center; font-size:13px; font-weight:600; color:#444; cursor:pointer; border-bottom:2px solid transparent; }
-.tab.on { color:#8b7fff; border-bottom-color:#8b7fff; }
-.toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:#1a1a2e; border:1px solid #333; border-radius:10px; padding:12px 20px; font-size:13px; z-index:999; transition:transform 0.3s; white-space:nowrap; box-shadow:0 4px 20px rgba(0,0,0,0.5); }
-.toast.show { transform:translateX(-50%) translateY(0); }
-.stats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:16px; }
-.stat { background:#161625; border:1px solid #1a1a2e; border-radius:10px; padding:14px; text-align:center; }
-.stat-n { font-size:28px; font-weight:700; }
-.stat-l { font-size:10px; color:#555; margin-top:2px; }
-
-/* Video Preview Modal */
-.modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:200; flex-direction:column; align-items:center; justify-content:center; padding:20px; }
-.modal.show { display:flex; }
-.modal-inner { background:#0f0f1a; border:1px solid #1a1a2e; border-radius:20px; width:100%; max-width:600px; overflow:hidden; }
-.modal-header { padding:16px 20px; border-bottom:1px solid #1a1a2e; display:flex; align-items:center; justify-content:space-between; }
-.modal-title { font-size:15px; font-weight:700; }
-.modal-close { background:none; border:none; color:#888; font-size:20px; cursor:pointer; }
-.video-wrap { background:#000; position:relative; padding-bottom:56.25%; }
-.video-wrap video { position:absolute; inset:0; width:100%; height:100%; }
-.video-placeholder { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; }
-.video-placeholder-icon { font-size:48px; }
-.video-placeholder-text { font-size:14px; color:#888; text-align:center; }
-.modal-info { padding:16px 20px; border-bottom:1px solid #1a1a2e; }
-.modal-ch { font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; margin-bottom:4px; }
-.modal-name { font-size:16px; font-weight:700; margin-bottom:8px; }
-.modal-meta { display:flex; gap:8px; flex-wrap:wrap; }
-.modal-pill { font-size:11px; padding:3px 10px; border-radius:6px; background:#1a1a2e; color:#888; }
-.modal-actions { display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:16px 20px; }
-.modal-btn { padding:14px; border:none; border-radius:12px; font-size:14px; font-weight:700; cursor:pointer; font-family:Arial,sans-serif; }
-.modal-btn-reject { background:rgba(240,96,96,0.1); color:#f06060; border:1px solid rgba(240,96,96,0.3); }
-.modal-btn-approve { background:#4ecf8a; color:#000; }
-.modal-btn-approve:hover { opacity:0.9; }
-
-/* Processing screen */
-.processing { display:none; padding:30px 20px; text-align:center; }
-.processing.show { display:block; }
-.processing-icon { font-size:48px; margin-bottom:16px; animation:spin 2s linear infinite; }
-@keyframes spin { to { transform:rotate(360deg); } }
-.processing-title { font-size:16px; font-weight:700; margin-bottom:8px; }
-.processing-steps { text-align:left; margin-top:20px; }
-.proc-step { padding:10px 0; font-size:13px; color:#555; display:flex; align-items:center; gap:10px; border-bottom:1px solid #1a1a2e; }
-.proc-step:last-child { border:none; }
-.proc-step.done { color:#4ecf8a; }
-.proc-step.active { color:#8b7fff; }
-.proc-step.waiting { color:#555; }
-
-/* Script fullscreen */
-.script-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:300; overflow-y:auto; padding:20px; }
-.script-modal.show { display:block; }
-.script-modal-inner { background:#0f0f1a; border:1px solid #1a1a2e; border-radius:16px; padding:20px; max-width:700px; margin:0 auto; }
-.script-text { font-size:14px; line-height:1.8; color:#ccc; white-space:pre-wrap; margin-top:16px; }
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#07070f;color:#fff;font-family:Arial,sans-serif;}
+.header{background:#0f0f1a;padding:16px 20px;border-bottom:1px solid #222;}
+.logo{font-size:20px;font-weight:700;color:#8b7fff;}
+.tabs{display:flex;border-bottom:1px solid #222;background:#0f0f1a;position:sticky;top:0;z-index:10;}
+.tab{flex:1;padding:14px;text-align:center;font-size:13px;font-weight:600;color:#555;cursor:pointer;border-bottom:3px solid transparent;}
+.tab.on{color:#8b7fff;border-bottom-color:#8b7fff;}
+.container{padding:16px;max-width:700px;margin:0 auto;padding-bottom:40px;}
+.btn{display:block;width:100%;padding:16px;background:#8b7fff;border:none;border-radius:12px;color:#fff;font-size:16px;font-weight:700;cursor:pointer;margin-bottom:16px;text-align:center;}
+.card{background:#0f0f1a;border:1px solid #222;border-radius:12px;padding:16px;margin-bottom:12px;}
+.ch-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.ch{background:#161625;border:2px solid #222;border-radius:12px;padding:14px;cursor:pointer;text-align:center;}
+.ch.on{border-color:#8b7fff;background:#1a1430;}
+.ch-badge{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;margin:0 auto 6px;}
+.ch-n{font-size:12px;font-weight:600;}
+.pbar{background:#161625;border:1px solid #222;border-radius:12px;padding:16px;margin-bottom:16px;display:none;}
+.pbar.show{display:block;}
+.pstep{padding:8px 0;font-size:13px;color:#444;display:flex;gap:10px;align-items:center;border-bottom:1px solid #222;}
+.pstep:last-child{border:none;}
+.pstep.go{color:#8b7fff;}
+.pstep.ok{color:#4ecf8a;}
+.pstep.no{color:#f06060;}
+.dot{width:8px;height:8px;border-radius:50%;background:#333;flex-shrink:0;}
+.pstep.go .dot{background:#8b7fff;}
+.pstep.ok .dot{background:#4ecf8a;}
+.pstep.no .dot{background:#f06060;}
+.sc{background:#161625;border:1px solid #222;border-radius:12px;overflow:hidden;margin-bottom:10px;}
+.sc-h{padding:14px 16px;}
+.sc-ch{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;}
+.sc-t{font-size:15px;font-weight:700;margin-bottom:6px;}
+.sc-p{padding:0 16px 12px;font-size:13px;color:#666;line-height:1.6;}
+.sc-a{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid #222;}
+.sc-r{padding:13px;border:none;background:transparent;color:#f06060;font-size:13px;font-weight:700;cursor:pointer;border-right:1px solid #222;}
+.sc-ap{padding:13px;border:none;background:transparent;color:#4ecf8a;font-size:13px;font-weight:700;cursor:pointer;}
+.sc-bar{padding:10px 16px;border-top:1px solid #222;font-size:12px;}
+.empty{text-align:center;padding:60px 20px;color:#444;}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(100px);background:#222;border-radius:10px;padding:12px 20px;font-size:13px;z-index:99;transition:transform 0.3s;white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:50;align-items:flex-end;}
+.overlay.show{display:flex;}
+.sheet{background:#0f0f1a;border-radius:20px 20px 0 0;padding:24px;width:100%;}
+.sheet-title{font-size:16px;font-weight:700;margin-bottom:4px;}
+.sheet-ch{font-size:11px;color:#888;margin-bottom:16px;}
+.sheet-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.sheet-r{padding:14px;background:rgba(240,96,96,0.1);border:1px solid rgba(240,96,96,0.3);border-radius:12px;color:#f06060;font-size:14px;font-weight:700;cursor:pointer;}
+.sheet-ap{padding:14px;background:#4ecf8a;border:none;border-radius:12px;color:#000;font-size:14px;font-weight:700;cursor:pointer;}
+.loading-txt{font-size:13px;color:#8b7fff;text-align:center;padding:16px;}
+#errbox{display:none;background:#3a0f0f;border:2px solid #f06060;color:#ffb0b0;padding:14px;margin:10px 16px;border-radius:10px;font-size:12px;white-space:pre-wrap;word-break:break-word;}
+#statusline{font-size:11px;color:#4ecf8a;padding:4px 16px;}
 </style>
 </head>
 <body>
 
-<div class="header">
-  <div class="logo">ContentPilot</div>
-  <div style="font-size:12px;color:#555;">AI Video Studio</div>
+<div id="errbox"></div>
+<div id="statusline">Loading...</div>
+
+<script>
+window.onerror = function(msg, url, line, col, err){
+  var box = document.getElementById('errbox');
+  box.style.display = 'block';
+  box.textContent = 'ERROR: ' + msg + ' (line ' + line + ', col ' + col + ')';
+  document.getElementById('statusline').textContent = 'JS FAILED - see error above';
+  document.getElementById('statusline').style.color = '#f06060';
+  return false;
+};
+document.getElementById('statusline').textContent = 'Page loaded OK';
+</script>
+
+<div class="header"><div class="logo">ContentPilot</div></div>
+<div class="tabs">
+  <div class="tab on" id="t-gen" onclick="tab('gen')">Generate</div>
+  <div class="tab" id="t-rev" onclick="tab('rev')">Review</div>
+  <div class="tab" id="t-sch" onclick="tab('sch')">Schedule</div>
 </div>
 
 <div class="container">
-  <div class="tabs">
-    <div class="tab on" onclick="showTab('generate',this)">⚡ Generate</div>
-    <div class="tab" onclick="showTab('review',this)">📋 Review <span id="badge" style="background:#f06060;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;display:none">0</span></div>
-    <div class="tab" onclick="showTab('schedule',this)">📅 Schedule</div>
-  </div>
-
-  <!-- GENERATE -->
-  <div id="tab-generate">
+  <div id="pg-gen">
     <div class="card">
-      <h2>✨ Daily Scripts</h2>
-      <p>Select channels and click Generate. Claude AI writes fact-checked scripts.</p>
-      <button class="btn" id="genBtn" onclick="generate()">⚡ Generate Scripts</button>
+      <div style="font-size:18px;font-weight:700;margin-bottom:6px;">Daily Scripts</div>
+      <div style="font-size:13px;color:#888;margin-bottom:16px;">Select channels and tap Generate.</div>
+      <button class="btn" id="genbtn" onclick="doGenerate()">Generate Scripts</button>
     </div>
-    <div class="progress" id="progress">
-      <div style="font-size:13px;font-weight:700;margin-bottom:10px;" id="progTitle">Generating...</div>
-      <div class="step" id="s-psych"><div class="dot"></div>🧠 Dark Psychology</div>
-      <div class="step" id="s-space"><div class="dot"></div>🌌 Space and Universe</div>
-      <div class="step" id="s-hist"><div class="dot"></div>📜 Dark History</div>
-      <div class="step" id="s-crime"><div class="dot"></div>🕵️ True Crime</div>
+    <div class="pbar" id="pbar">
+      <div style="font-size:13px;font-weight:700;margin-bottom:10px;" id="ptitle">Generating...</div>
+      <div class="pstep" id="ps1"><div class="dot"></div>Dark Psychology</div>
+      <div class="pstep" id="ps2"><div class="dot"></div>Space and Universe</div>
+      <div class="pstep" id="ps3"><div class="dot"></div>Dark History</div>
+      <div class="pstep" id="ps4"><div class="dot"></div>True Crime</div>
     </div>
-    <div style="font-size:11px;color:#555;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;">Your Channels</div>
-    <div class="channel-grid">
-      <div class="ch on" data-ch="dark_psychology" onclick="toggleCh(this)" style="border-color:#8b7fff"><div class="ch-emoji">🧠</div><div class="ch-name" style="color:#8b7fff">Dark Psychology</div><div style="font-size:10px;color:#555;margin-top:3px" id="cc-dark_psychology">0 scripts</div></div>
-      <div class="ch on" data-ch="space_universe" onclick="toggleCh(this)" style="border-color:#38c4f0"><div class="ch-emoji">🌌</div><div class="ch-name" style="color:#38c4f0">Space and Universe</div><div style="font-size:10px;color:#555;margin-top:3px" id="cc-space_universe">0 scripts</div></div>
-      <div class="ch on" data-ch="dark_history" onclick="toggleCh(this)" style="border-color:#d4a96a"><div class="ch-emoji">📜</div><div class="ch-name" style="color:#d4a96a">Dark History</div><div style="font-size:10px;color:#555;margin-top:3px" id="cc-dark_history">0 scripts</div></div>
-      <div class="ch on" data-ch="true_crime" onclick="toggleCh(this)" style="border-color:#f06060"><div class="ch-emoji">🕵️</div><div class="ch-name" style="color:#f06060">True Crime</div><div style="font-size:10px;color:#555;margin-top:3px" id="cc-true_crime">0 scripts</div></div>
+    <div style="font-size:11px;color:#555;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;">Channels</div>
+    <div class="ch-grid">
+      <div class="ch on" id="ch1" onclick="toggleCh(this)"><div class="ch-badge" style="background:#8b7fff22;color:#8b7fff">P</div><div class="ch-n" style="color:#8b7fff">Dark Psychology</div></div>
+      <div class="ch on" id="ch2" onclick="toggleCh(this)"><div class="ch-badge" style="background:#38c4f022;color:#38c4f0">S</div><div class="ch-n" style="color:#38c4f0">Space Universe</div></div>
+      <div class="ch on" id="ch3" onclick="toggleCh(this)"><div class="ch-badge" style="background:#d4a96a22;color:#d4a96a">H</div><div class="ch-n" style="color:#d4a96a">Dark History</div></div>
+      <div class="ch on" id="ch4" onclick="toggleCh(this)"><div class="ch-badge" style="background:#f0606022;color:#f06060">C</div><div class="ch-n" style="color:#f06060">True Crime</div></div>
     </div>
   </div>
 
-  <!-- REVIEW -->
-  <div id="tab-review" style="display:none">
-    <div id="reviewList"></div>
-  </div>
-
-  <!-- SCHEDULE -->
-  <div id="tab-schedule" style="display:none">
-    <div class="stats">
-      <div class="stat"><div class="stat-n" id="st-total" style="color:#8b7fff">0</div><div class="stat-l">Total</div></div>
-      <div class="stat"><div class="stat-n" id="st-approved" style="color:#4ecf8a">0</div><div class="stat-l">Approved</div></div>
-      <div class="stat"><div class="stat-n" id="st-pending" style="color:#ffb84d">0</div><div class="stat-l">Pending</div></div>
-    </div>
-    <div id="schedList"></div>
-  </div>
+  <div id="pg-rev" style="display:none"><div id="revlist"></div></div>
+  <div id="pg-sch" style="display:none"><div id="schlist"></div></div>
 </div>
 
-<!-- VIDEO PREVIEW MODAL -->
-<div class="modal" id="videoModal">
-  <div class="modal-inner">
-    <div class="modal-header">
-      <div class="modal-title">📹 Final Video Preview</div>
-      <button class="modal-close" onclick="closeVideoModal()">✕</button>
+<div class="overlay" id="overlay">
+  <div class="sheet">
+    <div class="sheet-title" id="sheet-title">Loading...</div>
+    <div class="sheet-ch" id="sheet-ch"></div>
+    <div id="sheet-loading" class="loading-txt">Generating voice... please wait...</div>
+    <audio id="ap" controls style="display:none;width:100%;margin-bottom:16px;"></audio>
+    <div class="sheet-btns">
+      <button class="sheet-r" onclick="doReject()">Reject</button>
+      <button class="sheet-ap" onclick="doApprove()">Approve</button>
     </div>
-
-    <!-- Processing state -->
-    <div class="processing" id="processingState">
-      <div class="processing-icon">⚙️</div>
-      <div class="processing-title">Building your video...</div>
-      <div style="font-size:13px;color:#888;margin-bottom:20px;">This takes 2-3 minutes. Please wait.</div>
-      <div class="processing-steps">
-        <div class="proc-step waiting" id="proc-voice"><span style="font-size:16px">🎙️</span> Generating Rudra's voice narration</div>
-        <div class="proc-step waiting" id="proc-footage"><span style="font-size:16px">🎬</span> Fetching cinematic stock footage</div>
-        <div class="proc-step waiting" id="proc-music"><span style="font-size:16px">🎵</span> Adding background music</div>
-        <div class="proc-step waiting" id="proc-captions"><span style="font-size:16px">📝</span> Generating text captions</div>
-        <div class="proc-step waiting" id="proc-render"><span style="font-size:16px">✨</span> Rendering final video</div>
-      </div>
-    </div>
-
-    <!-- Video ready state -->
-    <div id="videoReadyState" style="display:none">
-      <div class="video-wrap">
-        <video id="videoPlayer" controls style="position:absolute;inset:0;width:100%;height:100%;"></video>
-      </div>
-      <div class="modal-info">
-        <div class="modal-ch" id="modalCh"></div>
-        <div class="modal-name" id="modalName"></div>
-        <div class="modal-meta">
-          <span class="modal-pill" id="modalDuration">⏱ Calculating...</span>
-          <span class="modal-pill" id="modalScore"></span>
-          <span class="modal-pill">🎙️ Rudra Voice</span>
-        </div>
-      </div>
-      <div class="modal-actions">
-        <button class="modal-btn modal-btn-reject" onclick="rejectFromModal()">❌ Reject</button>
-        <button class="modal-btn modal-btn-approve" onclick="approveFromModal()">✅ Approve & Schedule</button>
-      </div>
-    </div>
-
-    <!-- Voice only (no video assembly available) -->
-    <div id="voiceOnlyState" style="display:none">
-      <div style="padding:20px;">
-        <div style="background:#161625;border-radius:12px;padding:16px;margin-bottom:16px;">
-          <div style="font-size:13px;font-weight:700;margin-bottom:8px;color:#8b7fff;">🎙️ Voice Narration Ready</div>
-          <audio id="audioPlayer" controls style="width:100%;margin-top:8px;"></audio>
-        </div>
-        <div style="background:#1a2a1a;border:1px solid rgba(78,207,138,0.2);border-radius:12px;padding:14px;margin-bottom:16px;">
-          <div style="font-size:12px;color:#4ecf8a;font-weight:600;margin-bottom:6px;">✅ What's ready:</div>
-          <div style="font-size:13px;color:#888;line-height:1.6;">
-            ✓ Script written by Claude AI<br>
-            ✓ Rudra's voice narration generated<br>
-            ✓ Ready for video assembly
-          </div>
-        </div>
-        <div style="background:#1a1a2a;border:1px solid rgba(139,127,255,0.2);border-radius:12px;padding:14px;margin-bottom:16px;">
-          <div style="font-size:12px;color:#8b7fff;font-weight:600;margin-bottom:6px;">⏳ Coming next session:</div>
-          <div style="font-size:13px;color:#888;line-height:1.6;">
-            Stock footage assembly<br>
-            Text captions overlay<br>
-            Background music<br>
-            Final MP4 video
-          </div>
-        </div>
-        <div class="modal-info">
-          <div class="modal-ch" id="modalCh2"></div>
-          <div class="modal-name" id="modalName2"></div>
-        </div>
-      </div>
-      <div class="modal-actions">
-        <button class="modal-btn modal-btn-reject" onclick="rejectFromModal()">❌ Reject Script</button>
-        <button class="modal-btn modal-btn-approve" onclick="approveFromModal()">✅ Approve & Schedule</button>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<!-- SCRIPT FULLSCREEN MODAL -->
-<div class="script-modal" id="scriptModal">
-  <div class="script-modal-inner">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-      <div style="font-size:16px;font-weight:700;" id="scriptModalTitle"></div>
-      <button onclick="closeScriptModal()" style="background:#1a1a2e;border:none;color:#fff;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px;">Close</button>
-    </div>
-    <div class="script-text" id="scriptModalText"></div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-// ── KEYS ──────────────────────────────────────────────────────────────────
-const PROXY = 'https://contentpilot-proxy.shilpaunnitravnook.workers.dev/';
-const EK = 'sk_ca8480a4b093fcf60df5d0ae64e5d3dbfad638a64231a1b9';
-const VID = 'rkrNegGbFkudOQijQRs0';
-const PEXELS_KEY = ''; // Add your Pexels key here when ready
+try {
 
-// ── STATE ─────────────────────────────────────────────────────────────────
-let queue = JSON.parse(localStorage.getItem('cp4') || '[]');
-let currentModalId = null;
+var PROXY='https://contentpilot-proxy.shilpaunnitravnook.workers.dev/';
+var EK='sk_ca8480a4b093fcf60df5d0ae64e5d3dbfad638a64231a1b9';
+var VID='rkrNegGbFkudOQijQRs0';
+var Q=JSON.parse(localStorage.getItem('cpq6')||'[]');
+var currentId=null;
 
-const CH = {
-  dark_psychology:{name:'Dark Psychology',emoji:'🧠',color:'#8b7fff',topics:['manipulation tactics people use without realizing','cognitive biases that control your decisions','dark personality traits explained by psychology','why people stay in toxic relationships','psychological experiments that revealed disturbing truths','how propaganda works on the human brain','the psychology behind cult indoctrination','body language secrets psychologists know']},
-  space_universe:{name:'Space and Universe',emoji:'🌌',color:'#38c4f0',topics:['what exists beyond the observable universe','black holes NASA cannot fully explain','planets more terrifying than science fiction','the Fermi paradox and where aliens might be','mysterious signals from deep space explained','the multiverse theory and evidence','most extreme objects in the known universe','what actually happens inside a black hole']},
-  dark_history:{name:'Dark History',emoji:'📜',color:'#d4a96a',topics:['experiments governments tried to hide','historical atrocities never in history books','how ancient civilizations really collapsed','brutal practices of medieval history','wars that started for absurd reasons','secret societies that shaped world history','dark truth behind famous historical events','historical figures erased from records']},
-  true_crime:{name:'True Crime',emoji:'🕵️',color:'#f06060',topics:['cold cases solved decades later','psychology of serial killers explained','unsolved disappearances that baffled investigators','forensic breakthroughs that cracked impossible cases','cases where wrong person was convicted','most baffling unsolved mysteries in history','criminal masterminds and how they were caught','heists so perfect police still dont know how']}
-};
+var CHANNELS=[
+  {id:'dark_psychology',name:'Dark Psychology',badge:'P',color:'#8b7fff',psId:'ps1',topics:['manipulation tactics people use without realizing','cognitive biases that control decisions','dark personality traits explained by science','why people stay in toxic relationships','psychological experiments with disturbing results','how propaganda works on the brain','psychology behind cult indoctrination','body language secrets psychologists know']},
+  {id:'space_universe',name:'Space Universe',badge:'S',color:'#38c4f0',psId:'ps2',topics:['what exists beyond the observable universe','black holes NASA cannot explain','planets more terrifying than fiction','the Fermi paradox and alien life','mysterious deep space signals explained','multiverse theory and evidence','most extreme objects in the universe','what happens inside a black hole']},
+  {id:'dark_history',name:'Dark History',badge:'H',color:'#d4a96a',psId:'ps3',topics:['experiments governments tried to hide','atrocities never in history books','how ancient civilizations collapsed','brutal medieval practices','wars that started for absurd reasons','secret societies that shaped history','dark truth behind famous events','historical figures erased from records']},
+  {id:'true_crime',name:'True Crime',badge:'C',color:'#f06060',psId:'ps4',topics:['cold cases solved decades later','psychology of serial killers','unsolved disappearances that baffled police','forensic breakthroughs that cracked cases','cases where wrong person was convicted','most baffling unsolved mysteries','criminal masterminds and how caught','perfect heists police still cannot explain']}
+];
 
-// ── TABS ──────────────────────────────────────────────────────────────────
-function showTab(n,el){
-  ['generate','review','schedule'].forEach(t=>document.getElementById('tab-'+t).style.display='none');
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
-  document.getElementById('tab-'+n).style.display='block';
-  el.classList.add('on');
-  if(n==='review')renderReview();
-  if(n==='schedule')renderSchedule();
-}
-
-function toggleCh(el){el.classList.toggle('on');}
-
-// ── GENERATE ──────────────────────────────────────────────────────────────
-async function generate(){
-  const sel=[...document.querySelectorAll('.ch.on')].map(c=>c.dataset.ch);
-  if(!sel.length){toast('Select at least one channel');return;}
-  const btn=document.getElementById('genBtn');
-  btn.disabled=true;btn.textContent='⏳ Generating...';
-  document.getElementById('progress').classList.add('show');
-  const sm={dark_psychology:'s-psych',space_universe:'s-space',dark_history:'s-hist',true_crime:'s-crime'};
-  let done=0;
-  for(const id of sel){
-    ss(sm[id],'active');
-    try{
-      const r=await genScript(id,CH[id],pickTopic(id));
-      if(r){queue.push(r);done++;ss(sm[id],'done');}
-      else ss(sm[id],'fail');
-    }catch(e){ss(sm[id],'fail');console.error(e);}
-    save();updateCounts();
+function tab(name){
+  var pages=['gen','rev','sch'];
+  for(var i=0;i<pages.length;i++){
+    document.getElementById('pg-'+pages[i]).style.display='none';
+    document.getElementById('t-'+pages[i]).classList.remove('on');
   }
-  btn.disabled=false;btn.textContent='⚡ Generate Scripts';
-  document.getElementById('progTitle').textContent=done>0?done+' scripts ready!':'Failed';
-  if(done>0){toast(done+' scripts ready for review!');updateBadge();}
+  document.getElementById('pg-'+name).style.display='block';
+  document.getElementById('t-'+name).classList.add('on');
+  if(name==='rev') drawReview();
+  if(name==='sch') drawSchedule();
 }
 
-function ss(id,s){const el=document.getElementById(id);el.classList.remove('active','done','fail');el.classList.add(s);}
-function pickTopic(id){const used=queue.filter(q=>q.channel===id).slice(-5).map(q=>q.topic);const pool=CH[id].topics.filter(t=>!used.includes(t));const t=pool.length?pool:CH[id].topics;return t[Math.floor(Math.random()*t.length)];}
+function toggleCh(el){
+  el.classList.toggle('on');
+}
 
-async function genScript(chId,ch,topic){
-  const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1500,system:`You are a world-class YouTube scriptwriter for "${ch.name}". Write engaging factual scripts with real citations. Structure: hook, context, 5-7 verified facts with real sources, surprising twist, emotional close, CTA. 750-900 words. Calm soothing documentary tone. After script write on new lines: TITLE: [under 60 chars] SCORE: [0-100]`,messages:[{role:'user',content:'Write a complete YouTube script for "'+ch.name+'" on: "'+topic+'"'}]})});
-  if(!res.ok){const e=await res.json();toast('Erro
+function ps(id,state){
+  var el=document.getElementById(id);
+  el.classList.remove('go','ok','no');
+  if(state) el.classList.add(state);
+}
+
+function pickTopic(chId,ch){
+  var used=[];
+  for(var i=0;i<Q.length;i++){ if(Q[i].channel===chId) used.push(Q[i].topic); }
+  used=used.slice(-5);
+  var pool=[];
+  for(var j=0;j<ch.topics.length;j++){
+    if(used.indexOf(ch.topics[j])===-1) pool.push(ch.topics[j]);
+  }
+  var list=pool.length?pool:ch.topics;
+  return list[Math.floor(Math.random()*list.length)];
+}
+
+function callProxy(body, callback){
+  fetch(PROXY,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01'},
+    body:JSON.stringify(body)
+  }).then(function(res){ return res.json(); })
+    .then(function(data){ callback(null, data); })
+    .catch(function(err){ callback(err, null); });
+}
+
+function doGenerate(){
+  var selected=[];
+  for(var i=0;i<CHANNELS.length;i++){
+    var el=document.getElementById('ch'+(i+1));
+    if(el.classList.contains('on')) selected.push(CHANNELS[i]);
+  }
+  if(!selected.length){ showToast('Select at least one channel'); return; }
+
+  document.getElementById('pbar').classList.add('show');
+  var btn=document.getElementById('genbtn');
+  btn.disabled=true;
+  btn.textContent='Generating...';
+
+  runNext(selected, 0, 0);
+}
+
+function runNext(selected, index, doneCount){
+  if(index >= selected.length){
+    var btn=document.getElementById('genbtn');
+    btn.disabled=false;
+    btn.textContent='Generate Scripts';
+    document.getElementById('ptitle').textContent = doneCount>0 ? (doneCount+' scripts ready!') : 'Failed - check connection';
+    if(doneCount>0) showToast(doneCount+' scripts ready for review!');
+    return;
+  }
+
+  var ch=selected[index];
+  ps(ch.psId,'go');
+  var topic=pickTopic(ch.id, ch);
+
+  var body={
+    model:'claude-sonnet-4-6',
+    max_tokens:1500,
+    system:'You are a YouTube scriptwriter for "'+ch.name+'". Write engaging factual scripts. Structure: hook, context, 5-7 verified facts with real sources, twist, close, CTA. 750-900 words. After script write: TITLE: under 60 chars then SCORE: 0-100',
+    messages:[{role:'user',content:'Write a YouTube script for "'+ch.name+'" on: "'+topic+'"'}]
+  };
+
+  callProxy(body, function(err, data){
+    if(err || !data || !data.content || !data.content[0]){
+      ps(ch.psId,'no');
+      if(data && data.error) showToast('Error: '+data.error.message);
+      runNext(selected, index+1, doneCount);
+      return;
+    }
+
+    var text=data.content[0].text;
+    var lines=text.split('\n');
+    var title=topic, score=80, sl=[];
+    for(var k=0;k<lines.length;k++){
+      var l=lines[k];
+      if(l.indexOf('TITLE:')===0) title=l.replace('TITLE:','').trim();
+      else if(l.indexOf('SCORE:')===0){ try{ score=parseInt(l.replace('SCORE:','').trim()); }catch(e){} }
+      else sl.push(l);
+    }
+    var script=sl.join('\n').trim();
+
+    Q.push({
+      id: ch.id+'_'+Date.now(),
+      channel: ch.id,
+      name: ch.name,
+      badge: ch.badge,
+      color: ch.color,
+      topic: topic,
+      title: title,
+      script: script,
+      preview: script.split(' ').slice(0,40).join(' ')+'...',
+      score: score,
+      status: 'pending',
+      created: new Date().toISOString(),
+      scheduled: null
+    });
+    save();
+    ps(ch.psId,'ok');
+    runNext(selected, index+1, doneCount+1);
+  });
+}
+
+function drawReview(){
+  var list=document.getElementById('revlist');
+  var items=Q.slice().reverse();
+  if(!items.length){
+    list.innerHTML='<div class="empty"><div style="font-size:48px;margin-bottom:12px">--</div><div style="font-size:16px;font-weight:700;margin-bottom:8px">No scripts yet</div><div style="font-size:13px">Go to Generate tab</div></div>';
+    return;
+  }
+  var html='';
+  for(var i=0;i<items.length;i++){
+    var item=items[i];
+    var sc=item.score>=80?'#4ecf8a':item.score>=60?'#ffb84d':'#f06060';
+    var actions='';
+    if(item.status==='pending'){
+      actions='<div class="sc-a"><button class="sc-r" onclick="reject(\''+item.id+'\')">Reject</button><button class="sc-ap" onclick="preview(\''+item.id+'\')">Listen and Approve</button></div>';
+    } else if(item.status==='approved'){
+      var dt = item.scheduled ? new Date(item.scheduled).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '';
+      actions='<div class="sc-bar" style="color:#4ecf8a">Scheduled: '+dt+'</div>';
+    } else {
+      actions='<div class="sc-bar" style="color:#f06060">Rejected</div>';
+    }
+    html += '<div class="sc"><div class="sc-h"><div class="sc-ch" style="color:'+item.color+'">'+item.badge+' - '+item.name+'</div><div class="sc-t">'+item.title+'</div><span style="font-size:11px;background:'+sc+'22;color:'+sc+';padding:3px 8px;border-radius:6px">Fact: '+item.score+'%</span></div><div class="sc-p">'+item.preview+'</div>'+actions+'</div>';
+  }
+  list.innerHTML=html;
+}
+
+function preview(id){
+  currentId=id;
+  var item=null;
+  for(var i=0;i<Q.length;i++){ if(Q[i].id===id) item=Q[i]; }
+  if(!item) return;
+
+  document.getElementById('sheet-title').textContent=item.title;
+  document.getElementById('sheet-ch').textContent=item.badge+' - '+item.name;
+  document.getElementById('sheet-loading').style.display='block';
+  document.getElementById('sheet-loading').textContent='Generating voice... please wait...';
+  document.getElementById('ap').style.display='none';
+  document.getElementById('overlay').classList.add('show');
+
+  fetch('https://api.elevenlabs.io/v1/text-to-speech/'+VID,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','xi-api-key':EK},
+    body:JSON.stringify({
+      text: item.script.substring(0,4800),
+      model_id:'eleven_multilingual_v2',
+      voice_settings:{stability:0.50,similarity_boost:1.00,style:0.00,use_speaker_boost:true}
+    })
+  }).then(function(res){
+    if(res.ok){
+      return res.blob().then(function(blob){
+        var url=URL.createObjectURL(blob);
+        var audio=document.getElementById('ap');
+        audio.src=url;
+        audio.style.display='block';
+        document.getElementById('sheet-loading').style.display='none';
+        audio.play();
+        showToast('Rudra is speaking. Listen then approve.');
+      });
+    } else {
+      document.getElementById('sheet-loading').textContent='Voice failed. Review script and approve if happy.';
+    }
+  }).catch(function(e){
+    document.getElementById('sheet-loading').textContent='Voice unavailable. Review script above.';
+  });
+}
+
+function closeOverlay(){
+  document.getElementById('overlay').classList.remove('show');
+  var a=document.getElementById('ap');
+  a.pause();
+  a.src='';
+  currentId=null;
+}
+
+function doApprove(){
+  if(!currentId) return;
+  var item=null;
+  for(var i=0;i<Q.length;i++){ if(Q[i].id===currentId) item=Q[i]; }
+  if(!item) return;
+  item.status='approved';
+  var times={dark_psychology:{h:19,m:0},space_universe:{h:20,m:0},dark_history:{h:19,m:30},true_crime:{h:20,m:30}};
+  var t=times[item.channel]||{h:19,m:0};
+  var d=new Date();
+  d.setHours(t.h,t.m,0,0);
+  if(d<=new Date()) d.setDate(d.getDate()+1);
+  item.scheduled=d.toISOString();
+  save();
+  closeOverlay();
+  drawReview();
+  showToast('Approved and scheduled!');
+}
+
+function doReject(){
+  if(!currentId) return;
+  reject(currentId);
+  closeOverlay();
+}
+
+function reject(id){
+  var item=null;
+  for(var i=0;i<Q.length;i++){ if(Q[i].id===id) item=Q[i]; }
+  if(!item) return;
+  item.status='rejected';
+  save();
+  drawReview();
+  showToast('Rejected');
+}
+
+function drawSchedule(){
+  var approved=[], pending=[];
+  for(var i=0;i<Q.length;i++){
+    if(Q[i].status==='approved') approved.push(Q[i]);
+    if(Q[i].status==='pending') pending.push(Q[i]);
+  }
+  approved.sort(function(a,b){ return new Date(a.scheduled)-new Date(b.scheduled); });
+
+  var html='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;">';
+  html+='<div class="card" style="text-align:center"><div style="font-size:28px;font-weight:700;color:#8b7fff">'+Q.length+'</div><div style="font-size:10px;color:#555">Total</div></div>';
+  html+='<div class="card" style="text-align:center"><div style="font-size:28px;font-weight:700;color:#4ecf8a">'+approved.length+'</div><div style="font-size:10px;color:#555">Approved</div></div>';
+  html+='<div class="card" style="text-align:center"><div style="font-size:28px;font-weight:700;color:#ffb84d">'+pending.length+'</div><div style="font-size:10px;color:#555">Pending</div></div>';
+  html+='</div>';
+
+  if(approved.length){
+    html+='<div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Scheduled</div>';
+    for(var a=0;a<approved.length;a++){
+      var it=approved[a];
+      var dt=new Date(it.scheduled).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+      html+='<div style="background:#161625;border:1px solid #222;border-radius:12px;padding:14px;margin-bottom:8px;display:flex;gap:12px;align-items:center;"><div style="width:32px;height:32px;border-radius:50%;background:'+it.color+'22;color:'+it.color+';display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;">'+it.badge+'</div><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+it.title+'</div><div style="font-size:11px;color:#555">'+dt+'</div></div><div style="color:#4ecf8a;font-size:11px;font-weight:700">OK</div></div>';
+    }
+  }
+  if(pending.length){
+    html+='<div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;margin-top:16px;">Pending</div>';
+    for(var p=0;p<pending.length;p++){
+      var it2=pending[p];
+      html+='<div style="background:#161625;border:1px solid #222;border-radius:12px;padding:14px;margin-bottom:8px;display:flex;gap:12px;align-items:center;"><div style="width:32px;height:32px;border-radius:50%;background:'+it2.color+'22;color:'+it2.color+';display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;">'+it2.badge+'</div><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+it2.title+'</div><div style="font-size:11px;color:#555">'+it2.name+'</div></div><div onclick="tab(\'rev\')" style="color:#ffb84d;font-size:11px;font-weight:700;cursor:pointer">Review</div></div>';
+    }
+  }
+  if(!approved.length && !pending.length){
+    html+='<div class="empty"><div style="font-size:48px;margin-bottom:12px">--</div><div style="font-size:16px;font-weight:700;margin-bottom:8px">Nothing yet</div><div style="font-size:13px">Generate and approve scripts first</div></div>';
+  }
+  document.getElementById('schlist').innerHTML=html;
+}
+
+function save(){ localStorage.setItem('cpq6', JSON.stringify(Q)); }
+
+function showToast(msg){
+  var t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 4000);
+}
+
+document.getElementById('statusline').textContent = 'App ready - tap Generate Scripts';
+
+} catch(e) {
+  var box = document.getElementById('errbox');
+  box.style.display = 'block';
+  box.textContent = 'SCRIPT ERROR: ' + e.message;
+  document.getElementById('statusline').textContent = 'App failed to start - see error above';
+  document.getElementById('statusline').style.color = '#f06060';
+}
+</script>
+</body>
+</html>
