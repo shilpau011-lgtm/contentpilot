@@ -47,7 +47,10 @@ body{background:#07070f;color:#fff;font-family:Arial,sans-serif;}
 .overlay.show{display:flex;}
 .sheet{background:#0f0f1a;border-radius:20px 20px 0 0;padding:24px;width:100%;}
 .sheet-title{font-size:16px;font-weight:700;margin-bottom:4px;}
-.sheet-ch{font-size:11px;color:#888;margin-bottom:16px;}
+.sheet-ch{font-size:11px;color:#888;margin-bottom:12px;}
+.sheet-script{max-height:220px;overflow-y:auto;background:#161625;border-radius:10px;padding:12px;margin-bottom:12px;font-size:13px;line-height:1.7;color:#bbb;white-space:pre-wrap;}
+.sc-full{max-height:300px;overflow-y:auto;background:#0f0f1a;border-radius:8px;padding:10px 12px;margin:0 16px 12px;font-size:13px;line-height:1.7;color:#999;white-space:pre-wrap;display:none;}
+.sc-toggle{padding:0 16px 10px;font-size:12px;color:#8b7fff;cursor:pointer;}
 .sheet-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .sheet-r{padding:14px;background:rgba(240,96,96,0.1);border:1px solid rgba(240,96,96,0.3);border-radius:12px;color:#f06060;font-size:14px;font-weight:700;cursor:pointer;}
 .sheet-ap{padding:14px;background:#4ecf8a;border:none;border-radius:12px;color:#000;font-size:14px;font-weight:700;cursor:pointer;}
@@ -111,6 +114,7 @@ document.getElementById('statusline').textContent = 'Page loaded OK';
   <div class="sheet">
     <div class="sheet-title" id="sheet-title">Loading...</div>
     <div class="sheet-ch" id="sheet-ch"></div>
+    <div class="sheet-script" id="sheet-script"></div>
     <div id="sheet-loading" class="loading-txt">Generating voice... please wait...</div>
     <audio id="ap" controls style="display:none;width:100%;margin-bottom:16px;"></audio>
     <div class="sheet-btns">
@@ -279,9 +283,25 @@ function drawReview(){
     } else {
       actions='<div class="sc-bar" style="color:#f06060">Rejected</div>';
     }
-    html += '<div class="sc"><div class="sc-h"><div class="sc-ch" style="color:'+item.color+'">'+item.badge+' - '+item.name+'</div><div class="sc-t">'+item.title+'</div><span style="font-size:11px;background:'+sc+'22;color:'+sc+';padding:3px 8px;border-radius:6px">Fact: '+item.score+'%</span></div><div class="sc-p">'+item.preview+'</div>'+actions+'</div>';
+    html += '<div class="sc"><div class="sc-h"><div class="sc-ch" style="color:'+item.color+'">'+item.badge+' - '+item.name+'</div><div class="sc-t">'+item.title+'</div><span style="font-size:11px;background:'+sc+'22;color:'+sc+';padding:3px 8px;border-radius:6px">Fact: '+item.score+'%</span></div><div class="sc-p">'+item.preview+'</div><div class="sc-full" id="full-'+item.id+'"></div><div class="sc-toggle" id="toggle-'+item.id+'" onclick="toggleFull(\''+item.id+'\')">Read full script</div>'+actions+'</div>';
   }
   list.innerHTML=html;
+  for(var x=0;x<items.length;x++){
+    var fdiv=document.getElementById('full-'+items[x].id);
+    if(fdiv) fdiv.textContent=items[x].script;
+  }
+}
+
+function toggleFull(id){
+  var full=document.getElementById('full-'+id);
+  var toggle=document.getElementById('toggle-'+id);
+  if(full.style.display==='block'){
+    full.style.display='none';
+    toggle.textContent='Read full script';
+  } else {
+    full.style.display='block';
+    toggle.textContent='Hide script';
+  }
 }
 
 function preview(id){
@@ -292,6 +312,7 @@ function preview(id){
 
   document.getElementById('sheet-title').textContent=item.title;
   document.getElementById('sheet-ch').textContent=item.badge+' - '+item.name;
+  document.getElementById('sheet-script').textContent=item.script;
   document.getElementById('sheet-loading').style.display='block';
   document.getElementById('sheet-loading').textContent='Generating voice... please wait...';
   document.getElementById('ap').style.display='none';
