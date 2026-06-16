@@ -318,7 +318,7 @@ function preview(id){
   document.getElementById('ap').style.display='none';
   document.getElementById('overlay').classList.add('show');
 
-  fetch('https://api.elevenlabs.io/v1/text-to-speech/'+VID,{
+  fetch('https://elevenlabs-proxy.shilpaunnitravnook.workers.dev/v1/text-to-speech/'+VID,{
     method:'POST',
     headers:{'Content-Type':'application/json','xi-api-key':EK},
     body:JSON.stringify({
