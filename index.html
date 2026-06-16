@@ -338,10 +338,12 @@ function preview(id){
         showToast('Rudra is speaking. Listen then approve.');
       });
     } else {
-      document.getElementById('sheet-loading').textContent='Voice failed. Review script and approve if happy.';
+      return res.text().then(function(txt){
+        document.getElementById('sheet-loading').textContent='Voice error '+res.status+': '+txt.slice(0,120);
+      });
     }
   }).catch(function(e){
-    document.getElementById('sheet-loading').textContent='Voice unavailable. Review script above.';
+    document.getElementById('sheet-loading').textContent='Voice error: '+e.message;
   });
 }
 
