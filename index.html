@@ -219,7 +219,7 @@ function runNext(selected, index, doneCount){
   var body={
     model:'claude-sonnet-4-6',
     max_tokens:1500,
-    system:'You are a YouTube scriptwriter for "'+ch.name+'". Write engaging factual scripts. Structure: hook, context, 5-7 verified facts with real sources, twist, close, CTA. 750-900 words. After script write: TITLE: under 60 chars then SCORE: 0-100',
+    system:'You are a world-class YouTube scriptwriter for "'+ch.name+'". Write engaging factual scripts OPTIMIZED FOR VOICE NARRATION. CRITICAL RULES: 1) NO section headers, NO timestamps, NO [HOOK], NO [FACT 1], NO markdown formatting, NO asterisks, NO bold text - write pure flowing prose only. 2) Use short sentences for natural narration. 3) Structure: powerful hook, context, 5-7 verified facts with real sources naturally woven in, surprising twist, emotional close, CTA. 4) 750-900 words. 5) Calm soothing documentary tone like a Netflix narrator. After the script on new lines write: TITLE: under 60 chars then SCORE: 0-100',
     messages:[{role:'user',content:'Write a YouTube script for "'+ch.name+'" on: "'+topic+'"'}]
   };
 
