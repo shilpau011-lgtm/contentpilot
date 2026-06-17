@@ -388,13 +388,10 @@ function doReject(){
 }
 
 function reject(id){
-  var item=null;
-  for(var i=0;i<Q.length;i++){ if(Q[i].id===id) item=Q[i]; }
-  if(!item) return;
-  item.status='rejected';
+  Q = Q.filter(function(q){ return q.id !== id; });
   save();
   drawReview();
-  showToast('Rejected');
+  showToast('Rejected and removed');
 }
 
 function drawSchedule(){
